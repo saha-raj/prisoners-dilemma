@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prisoner's Dilemma Population Simulation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+</head>
+<body>
+    <header>
+        <h1>Prisoner's Dilemma Population Simulation</h1>
+    </header>
+    
+    <main>
+        <section id="controls">
+            <h2>Population Simulation Setup</h2>
+            <div class="strategy-selection">
+                <div class="strategy-group">
+                    <label for="strategy1">Strategy 1:</label>
+                    <select id="strategy1">
+                        <option value="always-cooperate">Always Cooperate</option>
+                        <option value="always-defect">Always Defect</option>
+                        <option value="tit-for-tat" selected>Tit-for-Tat</option>
+                        <option value="random">Random</option>
+                    </select>
+                    <div class="strategy-description" id="strategy1-description">
+                        Starts by cooperating, then mimics the opponent's previous move.
+                    </div>
+                    
+                    <label for="proportion1">Proportion:</label>
+                    <input type="range" id="proportion1" min="1" max="99" value="50">
+                    <span id="proportion1-value">50%</span>
+                </div>
+                
+                <div class="strategy-group">
+                    <label for="strategy2">Strategy 2:</label>
+                    <select id="strategy2">
+                        <option value="always-cooperate">Always Cooperate</option>
+                        <option value="always-defect" selected>Always Defect</option>
+                        <option value="tit-for-tat">Tit-for-Tat</option>
+                        <option value="random">Random</option>
+                    </select>
+                    <div class="strategy-description" id="strategy2-description">
+                        Always defects regardless of what the opponent does.
+                    </div>
+                    
+                    <label for="proportion2">Proportion:</label>
+                    <input type="range" id="proportion2" min="1" max="99" value="50" disabled>
+                    <span id="proportion2-value">50%</span>
+                </div>
+            </div>
+            
+            <div class="tournament-params">
+                <div class="param-group">
+                    <label for="population-size">Population Size (N):</label>
+                    <input type="number" id="population-size" min="10" max="1000" value="100">
+                </div>
+                
+                <div class="param-group">
+                    <label for="games-per-round">Total games to play:</label>
+                    <input type="number" id="games-per-round" min="100" max="10000" value="1000">
+                </div>
+                
+                <div class="param-group">
+                    <label for="games-per-pairing">Games per pairing:</label>
+                    <input type="number" id="games-per-pairing" min="1" max="100" value="10">
+                    <div class="param-description">Number of consecutive games each pair of agents will play against each other.</div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="start-tournament">Start Simulation</button>
+                    <button id="stop-tournament" disabled>Stop Simulation</button>
+                </div>
+                
+                <div id="running-indicator" class="hidden">
+                    <div class="spinner"></div>
+                    <span>Simulation in progress...</span>
+                </div>
+            </div>
+        </section>
+        
+        <section id="visualization">
+            <h2>Agent Pool and Score Distribution</h2>
+            <div id="tournament-container"></div>
+        </section>
+        
+        <section id="stats">
+            <h2>Simulation Statistics</h2>
+            <div id="stats-container"></div>
+        </section>
+        
+        <section id="explanation">
+            <h2>About the Strategies</h2>
+            <div class="strategy-info">
+                <div class="strategy-card">
+                    <h3>Always Cooperate</h3>
+                    <p>Always cooperates regardless of what the opponent does.</p>
+                    <p>Good against cooperative strategies, but easily exploited by defectors.</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Always Defect</h3>
+                    <p>Always defects regardless of what the opponent does.</p>
+                    <p>Exploits cooperative strategies, but performs poorly against other defectors.</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Tit for Tat</h3>
+                    <p>Starts by cooperating, then mimics the opponent's previous move.</p>
+                    <p>A robust strategy that can adapt to both cooperative and defective opponents.</p>
+                    <p><strong>Note:</strong> Tit for Tat's strength comes from repeated interactions with the same opponent, where it can establish cooperation through reciprocity.</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Random</h3>
+                    <p>Randomly chooses to cooperate or defect.</p>
+                    <p>Unpredictable, but generally not optimal against any specific strategy.</p>
+                </div>
+            </div>
+            <div class="payoff-info">
+                <h3>Payoff Matrix</h3>
+                <p>When both cooperate: 3 points each</p>
+                <p>When both defect: 1 point each</p>
+                <p>When one defects and one cooperates: Defector gets 4 points, cooperator gets 0 points</p>
+            </div>
+            <div class="tournament-info">
+                <h3>About This Simulation</h3>
+                <p>This simulation creates a population of N agents using two different strategies in proportions that you specify.</p>
+                <p>Agents are randomly paired for each game, with a total of K games played across the entire population.</p>
+                <p><strong>Games per pairing:</strong> Each pair of agents plays multiple consecutive games against each other. This is crucial for strategies like Tit for Tat that rely on learning from previous interactions.</p>
+                <p>The visualization shows both the agent pool (where dot size represents score and dots move around) and a sideways histogram of score distributions.</p>
+                <p>The histogram displays scores vertically with one strategy on the left and the other on the right, allowing you to compare their performance.</p>
+                <p>This dynamic visualization helps you see how different strategies perform across a population and how score distributions evolve over time.</p>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Load our JavaScript modules -->
+    <script src="js/strategies.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/tournament.js"></script>
+    <script src="js/visualization.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
