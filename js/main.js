@@ -7,114 +7,145 @@
  */
 
 // Wait for the DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const strategy1Select = document.getElementById('strategy1');
     const strategy2Select = document.getElementById('strategy2');
     const strategy1Description = document.getElementById('strategy1-description');
     const strategy2Description = document.getElementById('strategy2-description');
-    const proportion1Input = document.getElementById('proportion1');
-    const proportion2Input = document.getElementById('proportion2');
-    const proportion1Value = document.getElementById('proportion1-value');
-    const proportion2Value = document.getElementById('proportion2-value');
     const populationSizeInput = document.getElementById('population-size');
-    const gamesPerRoundInput = document.getElementById('games-per-round');
+    const populationSizeValue = document.getElementById('population-size-value');
+    const totalGamesInput = document.getElementById('total-games');
+    const totalGamesValue = document.getElementById('total-games-value');
     const gamesPerPairingInput = document.getElementById('games-per-pairing');
-    const startSimulationButton = document.getElementById('start-tournament');
-    const stopSimulationButton = document.getElementById('stop-tournament');
+    const gamesPerPairingValue = document.getElementById('games-per-pairing-value');
+    const startButton = document.getElementById('start-tournament');
+    const stopButton = document.getElementById('stop-tournament');
+    const resetButton = document.getElementById('reset-visualization');
     const runningIndicator = document.getElementById('running-indicator');
+    
+    // Proportion control elements
+    const proportionSlider = document.getElementById('proportion-slider');
+    const proportionLabelLeft = document.getElementById('proportion-label-left');
+    const proportionLabelRight = document.getElementById('proportion-label-right');
+    
+    // Current proportion value (0.5 = 50% for each strategy)
+    let currentProportion = 0.5;
+    
+    // Initialize proportion control
+    updateProportionControl(currentProportion);
+    
+    // Add event listener for proportion slider
+    proportionSlider.addEventListener('input', function() {
+        currentProportion = this.value / 100;
+        updateProportionControl(currentProportion);
+    });
+    
+    // Function to update the proportion control UI
+    function updateProportionControl(proportion) {
+        // Update slider value
+        proportionSlider.value = proportion * 100;
+        
+        // Update labels
+        proportionLabelLeft.textContent = `${Math.round(proportion * 100)}%`;
+        proportionLabelRight.textContent = `${Math.round((1 - proportion) * 100)}%`;
+        
+        // Update slider background dynamically
+        const percent = proportion * 100;
+        proportionSlider.style.background = `linear-gradient(to right, 
+            rgba(76, 175, 80, 0.6) 0%, 
+            rgba(76, 175, 80, 0.6) ${percent}%, 
+            rgba(255, 87, 34, 0.6) ${percent}%, 
+            rgba(255, 87, 34, 0.6) 100%)`;
+    }
+    
+    // Strategy descriptions
+    const strategyDescriptions = {
+        'cooperator': 'Always cooperates regardless of opponent\'s moves.',
+        'defector': 'Always defects regardless of opponent\'s moves.',
+        'random': 'Randomly chooses to cooperate or defect with equal probability.',
+        'tit-for-tat': 'Starts by cooperating, then copies opponent\'s previous move.',
+        'grudger': 'Cooperates until the opponent defects, then always defects.',
+        'detective': 'Starts with a specific sequence, then switches to Tit for Tat if the opponent ever defects, otherwise defects.',
+        'pavlov': 'Starts by cooperating, then changes strategy only when receiving a low payoff.'
+    };
     
     // Simulation and visualizer instances
     let simulation = null;
     let visualizer = null;
-    let simulationRunning = false;
+    let isRunning = false;
     let stopRequested = false;
     let nextGameTimeout = null;
     
     // Initialize the visualizer
-    visualizer = new visualizationModule.SimulationVisualizer('tournament-container', {
+    visualizer = new SimulationVisualizer('tournament-container', {
         width: document.getElementById('tournament-container').clientWidth,
         height: 400
     });
     
-    // Update proportion display when slider changes
-    proportion1Input.addEventListener('input', () => {
-        const value = proportion1Input.value;
-        proportion1Value.textContent = `${value}%`;
-        proportion2Value.textContent = `${100 - value}%`;
+    // Update slider values as they change
+    populationSizeInput.addEventListener('input', function() {
+        populationSizeValue.textContent = this.value;
+    });
+    
+    totalGamesInput.addEventListener('input', function() {
+        totalGamesValue.textContent = this.value;
+    });
+    
+    gamesPerPairingInput.addEventListener('input', function() {
+        gamesPerPairingValue.textContent = this.value;
     });
     
     // Update strategy descriptions when selections change
-    strategy1Select.addEventListener('change', () => {
-        updateStrategyDescription(strategy1Select.value, strategy1Description);
+    strategy1Select.addEventListener('change', function() {
+        strategy1Description.textContent = strategyDescriptions[this.value];
     });
     
-    strategy2Select.addEventListener('change', () => {
-        updateStrategyDescription(strategy2Select.value, strategy2Description);
+    strategy2Select.addEventListener('change', function() {
+        strategy2Description.textContent = strategyDescriptions[this.value];
     });
     
-    // Function to update strategy description
-    function updateStrategyDescription(strategyId, descriptionElement) {
-        const strategy = strategiesModule.strategies[strategyId];
-        if (strategy && strategy.description) {
-            descriptionElement.textContent = strategy.description;
-        }
-    }
-    
-    // Initialize strategy descriptions
-    updateStrategyDescription(strategy1Select.value, strategy1Description);
-    updateStrategyDescription(strategy2Select.value, strategy2Description);
-    
-    // Enable population size input
-    document.querySelector('.param-group:nth-child(1)').style.display = 'block';
-    
-    // Update the games per round label to be more descriptive
-    document.querySelector('label[for="games-per-round"]').textContent = 'Total games to play:';
-    
-    // Start simulation button click handler
-    startSimulationButton.addEventListener('click', () => {
-        // Reset stop flag
-        stopRequested = false;
+    // Start tournament button click handler
+    startButton.addEventListener('click', function() {
+        if (isRunning) return;
+        
+        // Disable controls during simulation
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        strategy1Select.disabled = true;
+        strategy2Select.disabled = true;
+        populationSizeInput.disabled = true;
+        totalGamesInput.disabled = true;
+        gamesPerPairingInput.disabled = true;
         
         // Show running indicator
         runningIndicator.classList.remove('hidden');
         
-        // Disable controls during simulation
-        startSimulationButton.disabled = true;
-        stopSimulationButton.disabled = false;
-        strategy1Select.disabled = true;
-        strategy2Select.disabled = true;
-        proportion1Input.disabled = true;
-        populationSizeInput.disabled = true;
-        gamesPerRoundInput.disabled = true;
-        gamesPerPairingInput.disabled = true;
-        
         // Get selected strategies and parameters
         const strategy1 = strategy1Select.value;
         const strategy2 = strategy2Select.value;
-        const proportion = parseInt(proportion1Input.value) / 100;
         const populationSize = parseInt(populationSizeInput.value);
-        const totalGames = parseInt(gamesPerRoundInput.value);
+        const totalGames = parseInt(totalGamesInput.value);
         const gamesPerPairing = parseInt(gamesPerPairingInput.value);
         
-        // Create simulation configuration with the two selected strategies
-        const simulationConfig = {
-            strategies: {
-                [strategy1]: 0,
-                [strategy2]: 0
-            },
-            proportion: proportion,
+        // Create simulation configuration
+        const config = {
+            strategies: {},
+            proportion: currentProportion,
             populationSize: populationSize,
             totalGames: totalGames,
             gamesPerPairing: gamesPerPairing
         };
         
+        // Set the strategies in the config
+        config.strategies[strategy1] = 0;
+        config.strategies[strategy2] = 0;
+        
         // Initialize simulation
-        simulation = new simulationModule.PopulationSimulation(simulationConfig);
-        simulationRunning = true;
+        simulation = new simulationModule.PopulationSimulation(config);
         
         // Set up simulation callbacks
-        simulation.onGameComplete = (gameResult) => {
+        simulation.onGameComplete = function(gameResult) {
             // Update visualization
             visualizer.update(simulation.getStatistics());
             
@@ -129,16 +160,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        simulation.onProgressUpdate = (stats) => {
+        simulation.onProgressUpdate = function(stats) {
             // Update visualization periodically
             visualizer.update(stats);
         };
         
-        simulation.onSimulationComplete = (results) => {
+        simulation.onSimulationComplete = function(results) {
             // Final update when simulation is complete
             visualizer.update(simulation.getStatistics());
             simulationComplete();
         };
+        
+        // Function to handle simulation completion
+        function simulationComplete() {
+            // Display final stats
+            displayFinalStats(simulation);
+            
+            // Re-enable controls
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            strategy1Select.disabled = false;
+            strategy2Select.disabled = false;
+            populationSizeInput.disabled = false;
+            totalGamesInput.disabled = false;
+            gamesPerPairingInput.disabled = false;
+            
+            // Hide running indicator
+            runningIndicator.classList.add('hidden');
+            
+            isRunning = false;
+        }
         
         // Initialize simulation and visualizer
         simulation.initialize();
@@ -148,16 +199,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialStats = simulation.getStatistics();
         visualizer.update(initialStats);
         
-        // Start the first game after a short delay
+        // Start the simulation
+        isRunning = true;
         setTimeout(() => {
             simulation.runGame();
-        }, 500);
+        }, 100);
     });
     
-    // Stop simulation button click handler
-    stopSimulationButton.addEventListener('click', () => {
+    // Stop tournament button click handler
+    stopButton.addEventListener('click', function() {
+        if (!isRunning || !simulation) return;
+        
         stopRequested = true;
-        stopSimulationButton.disabled = true;
+        stopButton.disabled = true;
         
         // If there's a pending timeout, clear it
         if (nextGameTimeout) {
@@ -166,27 +220,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // If simulation is running, mark it as complete
-        if (simulationRunning) {
-            simulationComplete();
+        if (isRunning) {
+            // Display final stats
+            displayFinalStats(simulation);
+            
+            // Re-enable controls
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            strategy1Select.disabled = false;
+            strategy2Select.disabled = false;
+            populationSizeInput.disabled = false;
+            totalGamesInput.disabled = false;
+            gamesPerPairingInput.disabled = false;
+            
+            // Hide running indicator
+            runningIndicator.classList.add('hidden');
+            
+            isRunning = false;
         }
     });
     
-    // Function to handle simulation completion
-    function simulationComplete() {
-        // Hide running indicator
-        runningIndicator.classList.add('hidden');
+    // Reset visualization button click handler
+    resetButton.addEventListener('click', function() {
+        if (visualizer) {
+            visualizer.reset();
+        }
+    });
+    
+    // Function to display final statistics
+    function displayFinalStats(simulation) {
+        const stats = simulation.getStatistics();
+        const strategy1 = strategy1Select.value;
+        const strategy2 = strategy2Select.value;
         
-        // Re-enable controls
-        startSimulationButton.disabled = false;
-        stopSimulationButton.disabled = true;
-        strategy1Select.disabled = false;
-        strategy2Select.disabled = false;
-        proportion1Input.disabled = false;
-        populationSizeInput.disabled = false;
-        gamesPerRoundInput.disabled = false;
-        gamesPerPairingInput.disabled = false;
+        // Determine the winner
+        const strategy1Avg = stats.strategyStats[strategy1].averageScore;
+        const strategy2Avg = stats.strategyStats[strategy2].averageScore;
         
-        simulationRunning = false;
+        // Display winner on the visualization
+        if (strategy1Avg > strategy2Avg) {
+            visualizer.displayWinner(strategy1);
+        } else if (strategy2Avg > strategy1Avg) {
+            visualizer.displayWinner(strategy2);
+        }
     }
     
     // Handle window resize
@@ -211,4 +287,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-}); 
+});

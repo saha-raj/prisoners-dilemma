@@ -45,10 +45,40 @@ class SimulationVisualizer {
             .attr('class', 'histogram')
             .attr('transform', `translate(${this.width * 0.7}, ${this.height / 2})`);
             
-        // Create a legend (now positioned between agent pool and histogram)
-        this.legendGroup = this.svg.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(${this.width * 0.45}, ${this.height * 0.2})`);
+        // Create a legend group for each strategy (positioned above the histograms)
+        // Align with the total score text positions for symmetry
+        this.leftLegendGroup = this.histogramGroup.append('g')
+            .attr('class', 'left-legend')
+            .attr('transform', `translate(${-this.width * 0.05}, ${-this.height * 0.55})`);
+            
+        this.rightLegendGroup = this.histogramGroup.append('g')
+            .attr('class', 'right-legend')
+            .attr('transform', `translate(${this.width * 0.05}, ${-this.height * 0.55})`);
+            
+        // Add winner labels (initially hidden)
+        this.leftWinnerLabel = this.histogramGroup.append('text')
+            .attr('class', 'winner-label left-winner')
+            .attr('text-anchor', 'end')
+            .attr('x', -this.width * 0.05)
+            .attr('y', -this.height * 0.60)
+            .text('WINNER')
+            .style('font-size', '12px')
+            .style('font-weight', 'bold')
+            .style('text-transform', 'uppercase')
+            .style('fill', '#4CAF50')
+            .style('opacity', 0);
+            
+        this.rightWinnerLabel = this.histogramGroup.append('text')
+            .attr('class', 'winner-label right-winner')
+            .attr('text-anchor', 'start')
+            .attr('x', this.width * 0.05)
+            .attr('y', -this.height * 0.60)
+            .text('WINNER')
+            .style('font-size', '12px')
+            .style('font-weight', 'bold')
+            .style('text-transform', 'uppercase')
+            .style('fill', '#4CAF50')
+            .style('opacity', 0);
             
         // Create axes for histogram
         this.xAxisLeft = this.histogramGroup.append('g')
@@ -68,12 +98,12 @@ class SimulationVisualizer {
             .attr('y', this.height * 0.45) // Moved down
             .text('Number of Agents');
             
-        // Add total score displays for each side
+        // Add total score displays for each side (moved down to create more space)
         this.leftTotalScore = this.histogramGroup.append('text')
             .attr('class', 'total-score left-score')
             .attr('text-anchor', 'end')
             .attr('x', -this.width * 0.05)
-            .attr('y', -this.height * 0.35)
+            .attr('y', -this.height * 0.45) // Increased vertical space
             .text('Total: 0')
             .style('font-size', '12px')
             .style('font-weight', 'bold');
@@ -82,183 +112,76 @@ class SimulationVisualizer {
             .attr('class', 'total-score right-score')
             .attr('text-anchor', 'start')
             .attr('x', this.width * 0.05)
-            .attr('y', -this.height * 0.35)
+            .attr('y', -this.height * 0.45) // Increased vertical space
             .text('Total: 0')
             .style('font-size', '12px')
             .style('font-weight', 'bold');
             
-        // Add a title for the agent pool
-        this.agentPoolGroup.append('text')
-            .attr('class', 'agent-pool-title')
-            .attr('text-anchor', 'middle')
-            .attr('x', 0)
-            .attr('y', -this.height * 0.4)
-            .text('Agent Pool')
-            .style('font-size', '14px')
+        // Add average score displays below the totals
+        this.leftAvgScore = this.histogramGroup.append('text')
+            .attr('class', 'avg-score left-avg-score')
+            .attr('text-anchor', 'end')
+            .attr('x', -this.width * 0.05)
+            .attr('y', -this.height * 0.40) // Position below total score
+            .text('Avg: 0')
+            .style('font-size', '12px')
             .style('font-weight', 'bold');
             
-        // Add a title for the histogram
-        this.histogramGroup.append('text')
-            .attr('class', 'histogram-title')
-            .attr('text-anchor', 'middle')
-            .attr('x', 0)
-            .attr('y', -this.height * 0.4)
-            .text('Score Distribution')
-            .style('font-size', '14px')
+        this.rightAvgScore = this.histogramGroup.append('text')
+            .attr('class', 'avg-score right-avg-score')
+            .attr('text-anchor', 'start')
+            .attr('x', this.width * 0.05)
+            .attr('y', -this.height * 0.40) // Position below total score
+            .text('Avg: 0')
+            .style('font-size', '12px')
             .style('font-weight', 'bold');
-            
-        // Add controls
-        this.addControls();
             
         // Set up scales for the population pyramid histogram
         this.setupHistogramScales();
         
         // Set up the force simulation for agent movement
         this.setupForceSimulation();
+        
+        // Initially hide the y-axis and grid lines until simulation starts
+        this.histogramGroup.selectAll('.grid-line').remove();
+        this.histogramGroup.selectAll('.left-y-label').remove();
+        this.histogramGroup.selectAll('.right-y-label').remove();
+        this.yAxis.selectAll('*').remove();
     }
     
     /**
      * Add visualization controls (bin width, min/max score)
      */
     addControls() {
-        // Create a container for the controls
+        // Create an empty container for the controls
+        // We're removing the bin width slider and reset button as requested
         const controlsContainer = this.container.append('div')
             .attr('class', 'viz-controls')
             .style('margin-top', '10px')
             .style('text-align', 'center')
             .style('display', 'flex')
             .style('justify-content', 'center')
-            .style('gap', '20px');
-            
-        // Add bin width slider
-        const binWidthControl = controlsContainer.append('div')
-            .style('display', 'inline-block')
-            .style('margin-right', '20px');
-            
-        binWidthControl.append('label')
-            .attr('for', 'bin-width-slider')
-            .text('Bin Width: ')
-            .style('margin-right', '10px');
-            
-        const binWidthSlider = binWidthControl.append('input')
-            .attr('type', 'range')
-            .attr('id', 'bin-width-slider')
-            .attr('min', '1')
-            .attr('max', '10')
-            .attr('step', '1')
-            .attr('value', this.binWidth)
-            .style('vertical-align', 'middle');
-            
-        const binWidthValue = binWidthControl.append('span')
-            .attr('id', 'bin-width-value')
-            .text(this.binWidth)
-            .style('margin-left', '5px');
-            
-        // Add min score slider
-        const minScoreControl = controlsContainer.append('div')
-            .style('display', 'inline-block')
-            .style('margin-right', '20px');
-            
-        minScoreControl.append('label')
-            .attr('for', 'min-score-slider')
-            .text('Min Score: ')
-            .style('margin-right', '10px');
-            
-        const minScoreSlider = minScoreControl.append('input')
-            .attr('type', 'range')
-            .attr('id', 'min-score-slider')
-            .attr('min', '0')
-            .attr('max', '30')
-            .attr('step', '1')
-            .attr('value', this.minScore)
-            .style('vertical-align', 'middle');
-            
-        const minScoreValue = minScoreControl.append('span')
-            .attr('id', 'min-score-value')
-            .text(this.minScore)
-            .style('margin-left', '5px');
-            
-        // Add max score slider
-        const maxScoreControl = controlsContainer.append('div')
-            .style('display', 'inline-block');
-            
-        maxScoreControl.append('label')
-            .attr('for', 'max-score-slider')
-            .text('Max Score: ')
-            .style('margin-right', '10px');
-            
-        const maxScoreSlider = maxScoreControl.append('input')
-            .attr('type', 'range')
-            .attr('id', 'max-score-slider')
-            .attr('min', '10')
-            .attr('max', '100')
-            .attr('step', '5')
-            .attr('value', this.maxScore)
-            .style('vertical-align', 'middle');
-            
-        const maxScoreValue = maxScoreControl.append('span')
-            .attr('id', 'max-score-value')
-            .text(this.maxScore)
-            .style('margin-left', '5px');
-            
-        // Add event listeners
-        binWidthSlider.on('input', () => {
-            this.binWidth = parseInt(binWidthSlider.property('value'));
-            binWidthValue.text(this.binWidth);
-            
-            // Update histogram if we have data
-            if (this.simulation && this.lastStats) {
-                this.updateHistogram(this.lastStats.scoreDistributions, this.lastStats.strategyStats);
-            }
-        });
-        
-        minScoreSlider.on('input', () => {
-            const newMinScore = parseInt(minScoreSlider.property('value'));
-            // Ensure min score is less than max score
-            if (newMinScore < this.maxScore) {
-                this.minScore = newMinScore;
-                minScoreValue.text(this.minScore);
-                
-                // Update scales and histogram
-                this.setupHistogramScales();
-                if (this.simulation && this.lastStats) {
-                    this.updateHistogram(this.lastStats.scoreDistributions, this.lastStats.strategyStats);
-                }
-            }
-        });
-        
-        maxScoreSlider.on('input', () => {
-            const newMaxScore = parseInt(maxScoreSlider.property('value'));
-            // Ensure max score is greater than min score
-            if (newMaxScore > this.minScore) {
-                this.maxScore = newMaxScore;
-                maxScoreValue.text(this.maxScore);
-                
-                // Update scales and histogram
-                this.setupHistogramScales();
-                if (this.simulation && this.lastStats) {
-                    this.updateHistogram(this.lastStats.scoreDistributions, this.lastStats.strategyStats);
-                }
-            }
-        });
+            .style('align-items', 'center');
     }
     
     /**
      * Set up scales for the population pyramid histogram
      */
     setupHistogramScales() {
-        // X scales for left and right sides of the histogram with fixed limits
+        // Initial x scales for left and right sides of the histogram
+        // These will be updated dynamically in updateHistogram
         this.histogramXScaleLeft = d3.scaleLinear()
-            .domain([30, 0])  // Fixed limit of 30 agents in a bin
-            .range([-this.width * 0.15, 0]);  // Negative range for left side
+            .domain([5, 0])  // Initial default limit
+            .range([-this.width * 0.15, 0]);  // Fixed width for left side
             
         this.histogramXScaleRight = d3.scaleLinear()
-            .domain([0, 30])  // Fixed limit of 30 agents in a bin
-            .range([0, this.width * 0.15]);  // Positive range for right side
+            .domain([0, 5])  // Initial default limit
+            .range([0, this.width * 0.15]);  // Fixed width for right side
             
-        // Y scale for scores with user-defined limits
+        // Initial y scale for scores
+        // This will be updated dynamically in updateHistogram
         this.histogramYScale = d3.scaleLinear()
-            .domain([this.minScore, this.maxScore])  // User-defined limits
+            .domain([this.minScore, Math.max(this.minScore + 10, this.maxScore)])  // Initial limits
             .range([this.height * 0.35, -this.height * 0.35]);
             
         // Remove existing center line if it exists
@@ -270,26 +193,26 @@ class SimulationVisualizer {
             .attr('x1', 0)
             .attr('y1', this.histogramYScale(this.minScore))
             .attr('x2', 0)
-            .attr('y2', this.histogramYScale(this.maxScore))
+            .attr('y2', this.histogramYScale(Math.max(this.minScore + 10, this.maxScore)))
             .attr('stroke', '#ccc')
             .attr('stroke-width', 1);
             
-        // Set up axes
-        // X-axis at the bottom (y=0) for both left and right sides
-        // Position at min score or 0, whichever is higher
+        // Set up axes with initial values
+        // These will be updated in updateHistogram
         const xAxisYPos = this.histogramYScale(Math.max(0, this.minScore));
         
         this.xAxisLeft
             .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleLeft).ticks(3));
+            .call(d3.axisBottom(this.histogramXScaleLeft).tickValues([5, 2.5]))
+            .call(g => g.select('.domain').remove()); // Remove axis line
             
         this.xAxisRight
             .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleRight).ticks(3));
+            .call(d3.axisBottom(this.histogramXScaleRight).tickValues([2.5, 5]))
+            .call(g => g.select('.domain').remove()); // Remove axis line
             
-        this.yAxis
-            .attr('transform', `translate(0, 0)`)
-            .call(d3.axisLeft(this.histogramYScale).ticks(5));
+        // Initially hide the y-axis until simulation starts
+        this.yAxis.selectAll('*').remove();
     }
     
     /**
@@ -526,6 +449,9 @@ class SimulationVisualizer {
      * @param {PopulationSimulation} simulation - The simulation instance
      */
     initialize(simulation) {
+        // Reset any existing visualization first
+        this.reset();
+        
         this.simulation = simulation;
         this.updateLegend();
         
@@ -533,6 +459,54 @@ class SimulationVisualizer {
         if (this.simulation && this.simulation.agents) {
             this.initializeAgentPool();
         }
+    }
+    
+    /**
+     * Reset the visualization by clearing all elements
+     * This ensures a clean slate when starting a new simulation
+     */
+    reset() {
+        // Stop any ongoing force simulation
+        if (this.forceSimulation) {
+            this.forceSimulation.stop();
+        }
+        
+        // Clear agent data
+        this.agentData = null;
+        
+        // Clear agent pool elements
+        this.agentPoolGroup.selectAll('*').remove();
+        
+        // Clear histogram elements
+        this.histogramGroup.selectAll('.histogram-bar').remove();
+        this.histogramGroup.selectAll('.grid-line').remove();
+        this.histogramGroup.selectAll('.left-y-label').remove();
+        this.histogramGroup.selectAll('.right-y-label').remove();
+        
+        // Reset the center line
+        this.histogramGroup.select('.center-line').remove();
+        
+        // Clear legend elements
+        this.leftLegendGroup.selectAll('*').remove();
+        this.rightLegendGroup.selectAll('*').remove();
+        
+        // Reset total scores
+        this.leftTotalScore.text('Total: 0');
+        this.rightTotalScore.text('Total: 0');
+        
+        // Reset average scores
+        this.leftAvgScore.text('Avg: 0');
+        this.rightAvgScore.text('Avg: 0');
+        
+        // Reset winner labels
+        this.leftWinnerLabel.style('opacity', 0);
+        this.rightWinnerLabel.style('opacity', 0);
+        
+        // Re-create the center line with initial scales
+        this.setupHistogramScales();
+        
+        // Reset the last stats
+        this.lastStats = null;
     }
     
     /**
@@ -559,6 +533,19 @@ class SimulationVisualizer {
         this.pairingLinesGroup = this.agentPoolGroup.append('g')
             .attr('class', 'pairing-lines');
         
+        // Calculate baseline score for win-win cooperation
+        // Each win-win gives 3 points per agent
+        // Expected games per agent = games per pairing * total games / population size
+        const populationSize = this.simulation.agents.length;
+        const gamesPerPairing = this.simulation.config.gamesPerPairing;
+        const totalGames = this.simulation.config.totalGames;
+        
+        // Calculate expected games per agent (approximately)
+        const expectedGamesPerAgent = (gamesPerPairing * totalGames) / populationSize;
+        
+        // Baseline score if all games were win-win (3 points each)
+        const baselineScore = expectedGamesPerAgent * 3;
+        
         // Create agent data with random positions inside the circular area
         this.agentData = agents.map((agent, i) => {
             // Use true random positioning but with a better distribution
@@ -576,10 +563,12 @@ class SimulationVisualizer {
             return {
                 id: agent.id,
                 strategyId: agent.strategyId,
-                score: 0,
+                score: baselineScore, // Start with baseline score instead of 0
+                baselineScore: baselineScore, // Store the baseline for reference
+                relativeScore: 0, // Track relative performance compared to baseline
                 x: x,
                 y: y,
-                radius: 2,  // Start with smaller dots
+                radius: 5,  // Start with medium-sized dots
                 currentPairingId: null, // ID of current pairing partner
                 playedWith: new Set(), // Set of agent IDs this agent has played with
                 isInPairing: false, // Whether agent is currently in a pairing
@@ -613,43 +602,37 @@ class SimulationVisualizer {
      */
     updateLegend() {
         // Clear existing legend
-        this.legendGroup.selectAll('*').remove();
+        this.leftLegendGroup.selectAll('*').remove();
+        this.rightLegendGroup.selectAll('*').remove();
         
         if (!this.simulation) return;
         
         // Get the two strategies
         const strategies = Object.keys(this.simulation.strategyStats);
+        if (strategies.length < 2) return;
         
-        // Add title
-        this.legendGroup.append('text')
+        // Get strategy names
+        const leftStrategy = strategiesModule.strategies[strategies[0]].name;
+        const rightStrategy = strategiesModule.strategies[strategies[1]].name;
+        
+        // Add strategy names above the total scores, centered with the total score text
+        this.leftLegendGroup.append('text')
             .attr('x', 0)
-            .attr('y', -10)
-            .text('Strategies')
+            .attr('y', 0)
+            .text(leftStrategy)
             .style('font-size', '14px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('fill', this.colorScale(leftStrategy))
+            .style('text-anchor', 'end'); // Right-align to match total score
         
-        // Create legend items
-        const legendItems = this.legendGroup.selectAll('.legend-item')
-            .data(strategies)
-            .enter()
-            .append('g')
-            .attr('class', 'legend-item')
-            .attr('transform', (d, i) => `translate(0, ${i * 25 + 10})`);
-            
-        // Add colored circles
-        legendItems.append('circle')
-            .attr('r', 7)
-            .attr('cx', 7)
-            .attr('cy', 7)
-            .attr('fill', d => this.colorScale(strategiesModule.strategies[d].name))
-            .attr('opacity', 0.8);
-            
-        // Add strategy names
-        legendItems.append('text')
-            .attr('x', 20)
-            .attr('y', 12)
-            .text(d => strategiesModule.strategies[d].name)
-            .style('font-size', '14px');
+        this.rightLegendGroup.append('text')
+            .attr('x', 0)
+            .attr('y', 0)
+            .text(rightStrategy)
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .style('fill', this.colorScale(rightStrategy))
+            .style('text-anchor', 'start'); // Left-align to match total score
     }
     
     /**
@@ -850,13 +833,34 @@ class SimulationVisualizer {
             }
         });
         
-        // Find max score for scaling
-        const maxScore = Math.max(1, d3.max(this.agentData, d => d.score));
+        // Group agents by strategy
+        const strategiesData = {};
+        const strategies = Object.keys(this.simulation.strategyStats);
         
-        // Scale for agent size based on score
-        const sizeScale = d3.scaleSqrt()
-            .domain([0, maxScore])
-            .range([3, 12]);  // Slightly larger dots for better visibility
+        strategies.forEach(strategyId => {
+            strategiesData[strategyId] = this.agentData.filter(d => d && d.strategyId === strategyId);
+        });
+        
+        // Find max score overall for reference
+        const maxScoreOverall = Math.max(1, d3.max(this.agentData, d => d.score));
+        
+        // Create size scales for each strategy based on their own score ranges
+        const sizeScales = {};
+        
+        strategies.forEach(strategyId => {
+            const strategyAgents = strategiesData[strategyId];
+            if (strategyAgents.length === 0) return;
+            
+            // Find min and max scores for this strategy
+            const minScore = d3.min(strategyAgents, d => d.score);
+            const maxScore = d3.max(strategyAgents, d => d.score);
+            
+            // Create a linear scale for this strategy
+            // Use a percentage of the overall max score to ensure proportional representation
+            sizeScales[strategyId] = d3.scaleLinear()
+                .domain([0, maxScoreOverall])  // Use overall max for consistent scaling
+                .range([3, 12]);  // Size range from small to large
+        });
         
         // Update agent circles
         this.agentNodes
@@ -864,7 +868,12 @@ class SimulationVisualizer {
             .transition()
             .duration(200)
             .attr('r', d => {
-                const radius = sizeScale(d.score);
+                // Get the appropriate scale for this agent's strategy
+                const scale = sizeScales[d.strategyId];
+                if (!scale) return 3; // Fallback size
+                
+                // Scale the agent size based on its score
+                const radius = scale(d.score);
                 d.radius = radius;  // Update radius in data for collision detection
                 return radius;
             })
@@ -880,47 +889,82 @@ class SimulationVisualizer {
     
     /**
      * Update the histogram visualization
-     * @param {Object} scoreDistributions - Score distributions for each strategy
-     * @param {Object} strategyStats - Statistics for each strategy
+     * @param {Object} scoreDistributions - Score distributions by strategy
+     * @param {Object} strategyStats - Strategy statistics
      */
     updateHistogram(scoreDistributions, strategyStats) {
-        if (!scoreDistributions) return;
+        if (!scoreDistributions || !strategyStats) return;
         
-        // Get the strategies
+        // Get strategies
         const strategies = Object.keys(scoreDistributions);
-        if (strategies.length !== 2) return;
+        if (strategies.length === 0) return;
         
-        // Use the current bin width
+        // Calculate bin width based on the slider value
         const binWidth = this.binWidth;
         
-        // Create histogram bins
-        const strategyBins = {};
-        
-        // Track total scores for each strategy
-        const totalScores = {};
-        
-        // Initialize bins for each strategy
+        // Determine the max score from the data
+        let maxScore = this.minScore;
         strategies.forEach(strategyId => {
-            strategyBins[strategyId] = [];
-            totalScores[strategyId] = 0;
+            const stats = strategyStats[strategyId];
+            if (stats && stats.maxScore > maxScore) {
+                maxScore = stats.maxScore;
+            }
+        });
+        
+        // Round up to the nearest 10 for cleaner y-axis
+        maxScore = Math.ceil(maxScore / 10) * 10;
+        
+        // Safety check: ensure maxScore is reasonable
+        if (maxScore <= this.minScore) {
+            maxScore = this.minScore + 10;
+        }
+        
+        // Update the y scale with the new max score
+        this.histogramYScale = d3.scaleLinear()
+            .domain([this.minScore, maxScore])
+            .range([this.height * 0.35, -this.height * 0.35]);
+        
+        // Update the center line
+        this.histogramGroup.select('.center-line')
+            .attr('y1', this.histogramYScale(this.minScore))
+            .attr('y2', this.histogramYScale(maxScore));
+        
+        // Create bins for each strategy
+        const strategyBins = {};
+        const totalScores = {};
+        let maxBinCount = 0;
+        
+        strategies.forEach(strategyId => {
+            // Calculate number of bins with safety check
+            const numBins = Math.min(1000, Math.ceil((maxScore - this.minScore) / binWidth));
             
-            // Create bins from min to max score with the current bin width
-            for (let score = this.minScore; score <= this.maxScore; score += binWidth) {
-                strategyBins[strategyId].push({
-                    score: score,
-                    count: 0
-                });
+            // Safety check: ensure numBins is positive and reasonable
+            if (numBins <= 0 || numBins > 1000) {
+                strategyBins[strategyId] = [];
+                totalScores[strategyId] = 0;
+                return;
             }
             
-            // Fill bins with actual data
+            // Initialize bins for this strategy
+            strategyBins[strategyId] = Array.from({ length: numBins }, (_, i) => ({
+                score: this.minScore + i * binWidth,
+                count: 0
+            }));
+            
+            // Initialize total score
+            totalScores[strategyId] = 0;
+            
+            // Fill bins with data
             Object.entries(scoreDistributions[strategyId]).forEach(([score, count]) => {
-                const numScore = Number(score);
+                const numScore = parseFloat(score);
                 
                 // Only include scores within our range
-                if (numScore >= this.minScore && numScore <= this.maxScore) {
+                if (numScore >= this.minScore && numScore <= maxScore) {
                     const binIndex = Math.floor((numScore - this.minScore) / binWidth);
                     if (binIndex >= 0 && binIndex < strategyBins[strategyId].length) {
                         strategyBins[strategyId][binIndex].count += count;
+                        // Update max bin count if needed
+                        maxBinCount = Math.max(maxBinCount, strategyBins[strategyId][binIndex].count);
                     }
                     
                     // Add to total score
@@ -929,30 +973,129 @@ class SimulationVisualizer {
             });
         });
         
-        // Update total score displays
+        // Ensure we have a reasonable max count (at least 5)
+        maxBinCount = Math.max(5, maxBinCount);
+        
+        // Round up to a nice number for the x-axis
+        maxBinCount = Math.ceil(maxBinCount / 5) * 5;
+        
+        // Update x scales with the new dynamic max
+        this.histogramXScaleLeft = d3.scaleLinear()
+            .domain([maxBinCount, 0])  // Dynamic limit based on data
+            .range([-this.width * 0.15, 0]);  // Fixed width for left side
+            
+        this.histogramXScaleRight = d3.scaleLinear()
+            .domain([0, maxBinCount])  // Dynamic limit based on data
+            .range([0, this.width * 0.15]);  // Fixed width for right side
+        
+        // Update total score displays with fixed positions
         if (strategies.length === 2) {
             const strategy1 = strategies[0];
             const strategy2 = strategies[1];
             
             this.leftTotalScore
-                .text(`Total: ${totalScores[strategy1].toLocaleString()}`)
+                .attr('x', -this.width * 0.05)
+                .attr('y', -this.height * 0.45) // Increased vertical space
+                .text(`Total: ${Math.round(totalScores[strategy1]).toLocaleString()}`)
                 .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
                 
             this.rightTotalScore
-                .text(`Total: ${totalScores[strategy2].toLocaleString()}`)
+                .attr('x', this.width * 0.05)
+                .attr('y', -this.height * 0.45) // Increased vertical space
+                .text(`Total: ${Math.round(totalScores[strategy2]).toLocaleString()}`)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
+        }
+        
+        // Update average score displays below the totals
+        if (strategies.length === 2) {
+            const strategy1 = strategies[0];
+            const strategy2 = strategies[1];
+            
+            this.leftAvgScore
+                .attr('x', -this.width * 0.05)
+                .attr('y', -this.height * 0.40) // Position below total score
+                .text(`Avg: ${strategyStats[strategy1].averageScore.toFixed(2)}`)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
+                
+            this.rightAvgScore
+                .attr('x', this.width * 0.05)
+                .attr('y', -this.height * 0.40) // Position below total score
+                .text(`Avg: ${strategyStats[strategy2].averageScore.toFixed(2)}`)
                 .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
         }
         
         // Update x-axis positions
-        const xAxisYPos = this.histogramYScale(Math.max(0, this.minScore));
+        const xAxisYPos = this.histogramYScale(this.minScore);
+        
+        // Create custom tick values for left and right axes (only max and half-max)
+        const leftTicks = [maxBinCount, maxBinCount / 2];
+        const rightTicks = [maxBinCount / 2, maxBinCount];
         
         this.xAxisLeft
             .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleLeft).ticks(3));
+            .call(d3.axisBottom(this.histogramXScaleLeft).tickValues(leftTicks))
+            .call(g => g.select('.domain').remove()); // Remove axis line
             
         this.xAxisRight
             .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleRight).ticks(3));
+            .call(d3.axisBottom(this.histogramXScaleRight).tickValues(rightTicks))
+            .call(g => g.select('.domain').remove()); // Remove axis line
+        
+        // Clear existing grid lines and labels
+        this.histogramGroup.selectAll('.grid-line').remove();
+        this.histogramGroup.selectAll('.left-y-label').remove();
+        this.histogramGroup.selectAll('.right-y-label').remove();
+        
+        // Create nice round tick values for y-axis
+        const yTickInterval = Math.max(10, Math.ceil((maxScore - this.minScore) / 5 / 10) * 10);
+        const yTicks = [];
+        for (let i = this.minScore; i <= maxScore; i += yTickInterval) {
+            yTicks.push(i);
+        }
+        
+        // Add grid lines
+        this.histogramGroup.selectAll('.grid-line')
+            .data(yTicks)
+            .enter()
+            .append('line')
+            .attr('class', 'grid-line')
+            .attr('x1', -this.width * 0.15)
+            .attr('x2', this.width * 0.15)
+            .attr('y1', d => this.histogramYScale(d))
+            .attr('y2', d => this.histogramYScale(d))
+            .attr('stroke', '#eee')
+            .attr('stroke-width', 1);
+        
+        // Add left side labels
+        this.histogramGroup.selectAll('.left-y-label')
+            .data(yTicks)
+            .enter()
+            .append('text')
+            .attr('class', 'left-y-label')
+            .attr('x', -this.width * 0.15 - 5)
+            .attr('y', d => this.histogramYScale(d))
+            .attr('dy', '0.32em')
+            .attr('text-anchor', 'end')
+            .text(d => d)
+            .style('font-size', '10px')
+            .style('fill', '#777');
+        
+        // Add right side labels
+        this.histogramGroup.selectAll('.right-y-label')
+            .data(yTicks)
+            .enter()
+            .append('text')
+            .attr('class', 'right-y-label')
+            .attr('x', this.width * 0.15 + 5)
+            .attr('y', d => this.histogramYScale(d))
+            .attr('dy', '0.32em')
+            .attr('text-anchor', 'start')
+            .text(d => d)
+            .style('font-size', '10px')
+            .style('fill', '#777');
+        
+        // Remove the y-axis
+        this.yAxis.selectAll('*').remove();
         
         // Clear existing histogram elements
         this.histogramGroup.selectAll('.histogram-bar').remove();
@@ -960,6 +1103,8 @@ class SimulationVisualizer {
         // Create bars for each strategy
         strategies.forEach((strategyId, index) => {
             const bins = strategyBins[strategyId];
+            if (!bins || bins.length === 0) return;
+            
             const isFirstStrategy = index === 0;
             
             // Filter bins to only include bins with counts
@@ -1052,6 +1197,44 @@ class SimulationVisualizer {
                     .style('color', this.colorScale(winner.name))
                     .html(`<strong>Winner:</strong> ${winner.name} (${winner.stats.averageScore.toFixed(2)} points average)`);
             }
+        }
+    }
+    
+    /**
+     * Display the winner of the simulation
+     * @param {string} winnerStrategyId - ID of the winning strategy
+     */
+    displayWinner(winnerStrategyId) {
+        if (!winnerStrategyId || !this.simulation) return;
+        
+        // Get the strategies
+        const strategies = Object.keys(this.simulation.strategyStats);
+        if (strategies.length !== 2) return;
+        
+        // Determine which side won
+        const isLeftWinner = strategies[0] === winnerStrategyId;
+        const isRightWinner = strategies[1] === winnerStrategyId;
+        
+        // Show the appropriate winner label
+        if (isLeftWinner) {
+            this.leftWinnerLabel
+                .style('opacity', 1)
+                .style('font-size', '14px')
+                .style('fill', '#4CAF50');
+            this.rightWinnerLabel.style('opacity', 0);
+            console.log("Left side wins:", winnerStrategyId);
+        } else if (isRightWinner) {
+            this.leftWinnerLabel.style('opacity', 0);
+            this.rightWinnerLabel
+                .style('opacity', 1)
+                .style('font-size', '14px')
+                .style('fill', '#4CAF50');
+            console.log("Right side wins:", winnerStrategyId);
+        } else {
+            // It's a tie or unknown winner
+            this.leftWinnerLabel.style('opacity', 0);
+            this.rightWinnerLabel.style('opacity', 0);
+            console.log("No winner determined");
         }
     }
 }

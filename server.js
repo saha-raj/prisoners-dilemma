@@ -5,7 +5,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3000;
+// Try multiple ports in case the default is in use
+const PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
 
 // MIME types for different file extensions
 const MIME_TYPES = {
@@ -54,8 +55,27 @@ const server = http.createServer((req, res) => {
     });
 });
 
-// Start the server
-server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}/`);
-    console.log('Press Ctrl+C to stop the server');
-}); 
+// Try to start the server on different ports
+function tryPort(portIndex) {
+    if (portIndex >= PORTS.length) {
+        console.error('Could not start server on any of the configured ports.');
+        return;
+    }
+    
+    const port = PORTS[portIndex];
+    
+    server.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}/`);
+        console.log('Press Ctrl+C to stop the server');
+    }).on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.log(`Port ${port} is already in use, trying next port...`);
+            tryPort(portIndex + 1);
+        } else {
+            console.error('Server error:', err);
+        }
+    });
+}
+
+// Start trying ports
+tryPort(0); 
