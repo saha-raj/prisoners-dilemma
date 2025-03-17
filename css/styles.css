@@ -68,11 +68,11 @@ section {
 }
 
 .strategy1-color {
-    background-color: rgba(76, 175, 80, 0.8);
+    background-color: #168aad; /* Tit for Tat - default strategy 1 */
 }
 
 .strategy2-color {
-    background-color: rgba(255, 87, 34, 0.8);
+    background-color: #ff9770; /* Defector - default strategy 2 */
 }
 
 .strategy-description {

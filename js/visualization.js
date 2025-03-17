@@ -27,8 +27,26 @@ class SimulationVisualizer {
         this.minScore = 0;  // Default min score for y-axis
         this.maxScore = 50; // Default max score for y-axis
         
-        // Color scale for different strategies
-        this.colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+        // Set up color scale for strategies
+        this.colorScale = d3.scaleOrdinal()
+            .domain([
+                'Cooperator', 
+                'Defector', 
+                'Tit for Tat', 
+                'Random', 
+                'Grudger', 
+                'Detective', 
+                'Pavlov'
+            ])
+            .range([
+                '#06d6a0', // Cooperator - specified
+                '#ff9770', // Defector - specified
+                '#168aad', // Tit for Tat - specified
+                '#f72585', // Random - specified
+                '#9b5de5', // Grudger - specified
+                '#565264', // Detective - specified
+                '#fcca46'  // Pavlov - specified
+            ]);
         
         // Initialize the SVG
         this.svg = this.container.append('svg')

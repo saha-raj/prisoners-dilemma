@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const strategy2Select = document.getElementById('strategy2');
     const strategy1Description = document.getElementById('strategy1-description');
     const strategy2Description = document.getElementById('strategy2-description');
+    const strategy1Color = document.querySelector('.strategy1-color');
+    const strategy2Color = document.querySelector('.strategy2-color');
     const populationSizeInput = document.getElementById('population-size');
     const populationSizeValue = document.getElementById('population-size-value');
     const totalGamesInput = document.getElementById('total-games');
@@ -28,6 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const proportionSlider = document.getElementById('proportion-slider');
     const proportionLabelLeft = document.getElementById('proportion-label-left');
     const proportionLabelRight = document.getElementById('proportion-label-right');
+    
+    // Strategy colors
+    const strategyColors = {
+        'cooperator': '#06d6a0',
+        'defector': '#ff9770',
+        'tit-for-tat': '#168aad',
+        'random': '#f72585',
+        'grudger': '#9b5de5',
+        'detective': '#565264',
+        'pavlov': '#fcca46'
+    };
     
     // Current proportion value (0.5 = 50% for each strategy)
     let currentProportion = 0.5;
@@ -50,13 +63,17 @@ document.addEventListener('DOMContentLoaded', function() {
         proportionLabelLeft.textContent = `${Math.round(proportion * 100)}%`;
         proportionLabelRight.textContent = `${Math.round((1 - proportion) * 100)}%`;
         
-        // Update slider background dynamically
+        // Get current strategy colors
+        const leftColor = strategyColors[strategy1Select.value];
+        const rightColor = strategyColors[strategy2Select.value];
+        
+        // Update slider background dynamically with actual strategy colors
         const percent = proportion * 100;
         proportionSlider.style.background = `linear-gradient(to right, 
-            rgba(76, 175, 80, 0.6) 0%, 
-            rgba(76, 175, 80, 0.6) ${percent}%, 
-            rgba(255, 87, 34, 0.6) ${percent}%, 
-            rgba(255, 87, 34, 0.6) 100%)`;
+            ${leftColor} 0%, 
+            ${leftColor} ${percent}%, 
+            ${rightColor} ${percent}%, 
+            ${rightColor} 100%)`;
     }
     
     // Strategy descriptions
@@ -99,11 +116,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update strategy descriptions when selections change
     strategy1Select.addEventListener('change', function() {
         strategy1Description.textContent = strategyDescriptions[this.value];
+        strategy1Color.style.backgroundColor = strategyColors[this.value];
+        updateProportionControl(currentProportion); // Update slider colors
     });
     
     strategy2Select.addEventListener('change', function() {
         strategy2Description.textContent = strategyDescriptions[this.value];
+        strategy2Color.style.backgroundColor = strategyColors[this.value];
+        updateProportionControl(currentProportion); // Update slider colors
     });
+    
+    // Initialize color indicators with default selected strategies
+    strategy1Color.style.backgroundColor = strategyColors[strategy1Select.value];
+    strategy2Color.style.backgroundColor = strategyColors[strategy2Select.value];
     
     // Start tournament button click handler
     startButton.addEventListener('click', function() {
