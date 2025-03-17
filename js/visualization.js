@@ -43,7 +43,7 @@ class SimulationVisualizer {
         // Create a group for the histogram (right side) - moved further right
         this.histogramGroup = this.svg.append('g')
             .attr('class', 'histogram')
-            .attr('transform', `translate(${this.width * 0.7}, ${this.height / 2})`);
+            .attr('transform', `translate(${this.width * 0.7}, ${this.height / 2 + 20})`); // Move down by 20px
             
         // Create a legend group for each strategy (positioned above the histograms)
         // Align with the total score text positions for symmetry
@@ -55,14 +55,37 @@ class SimulationVisualizer {
             .attr('class', 'right-legend')
             .attr('transform', `translate(${this.width * 0.05}, ${-this.height * 0.55})`);
             
+        // Add strategy name labels to clearly identify each side of the histogram
+        this.leftStrategyLabel = this.histogramGroup.append('text')
+            .attr('class', 'strategy-label left-strategy')
+            .attr('text-anchor', 'middle') // Center align
+            .attr('x', -this.width * 0.05)
+            .attr('y', -this.height * 0.65) // Move up to avoid truncation
+            .text('Strategy 1')
+            .style('font-size', '16px') // Larger font
+            .style('font-weight', 'bold')
+            .style('fill', 'rgba(76, 175, 80, 0.8)')
+            .style('opacity', 0); // Initially hidden
+            
+        this.rightStrategyLabel = this.histogramGroup.append('text')
+            .attr('class', 'strategy-label right-strategy')
+            .attr('text-anchor', 'middle') // Center align
+            .attr('x', this.width * 0.05)
+            .attr('y', -this.height * 0.65) // Move up to avoid truncation
+            .text('Strategy 2')
+            .style('font-size', '16px') // Larger font
+            .style('font-weight', 'bold')
+            .style('fill', 'rgba(255, 87, 34, 0.8)')
+            .style('opacity', 0); // Initially hidden
+            
         // Add winner labels (initially hidden)
         this.leftWinnerLabel = this.histogramGroup.append('text')
             .attr('class', 'winner-label left-winner')
-            .attr('text-anchor', 'end')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', -this.width * 0.05)
-            .attr('y', -this.height * 0.60)
+            .attr('y', -this.height * 0.70) // Position above strategy name
             .text('WINNER')
-            .style('font-size', '12px')
+            .style('font-size', '14px')
             .style('font-weight', 'bold')
             .style('text-transform', 'uppercase')
             .style('fill', '#4CAF50')
@@ -70,11 +93,11 @@ class SimulationVisualizer {
             
         this.rightWinnerLabel = this.histogramGroup.append('text')
             .attr('class', 'winner-label right-winner')
-            .attr('text-anchor', 'start')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', this.width * 0.05)
-            .attr('y', -this.height * 0.60)
+            .attr('y', -this.height * 0.70) // Position above strategy name
             .text('WINNER')
-            .style('font-size', '12px')
+            .style('font-size', '14px')
             .style('font-weight', 'bold')
             .style('text-transform', 'uppercase')
             .style('fill', '#4CAF50')
@@ -101,40 +124,67 @@ class SimulationVisualizer {
         // Add total score displays for each side (moved down to create more space)
         this.leftTotalScore = this.histogramGroup.append('text')
             .attr('class', 'total-score left-score')
-            .attr('text-anchor', 'end')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', -this.width * 0.05)
             .attr('y', -this.height * 0.45) // Increased vertical space
             .text('Total: 0')
             .style('font-size', '12px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('opacity', 0); // Initially hidden
             
         this.rightTotalScore = this.histogramGroup.append('text')
             .attr('class', 'total-score right-score')
-            .attr('text-anchor', 'start')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', this.width * 0.05)
             .attr('y', -this.height * 0.45) // Increased vertical space
             .text('Total: 0')
             .style('font-size', '12px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('opacity', 0); // Initially hidden
+            
+        // Add strategy name labels directly above the total scores
+        this.leftStrategyNameLabel = this.histogramGroup.append('text')
+            .attr('class', 'strategy-name-label left-strategy-name')
+            .attr('text-anchor', 'middle') // Center align
+            .attr('x', -this.width * 0.05)
+            .attr('y', -this.height * 0.50) // Position above total score
+            .text('Strategy 1')
+            .style('font-size', '18px')
+            .style('font-weight', 'bold')
+            .style('fill', 'rgba(76, 175, 80, 0.8)')
+            .style('opacity', 0); // Initially hidden
+            
+        this.rightStrategyNameLabel = this.histogramGroup.append('text')
+            .attr('class', 'strategy-name-label right-strategy-name')
+            .attr('text-anchor', 'middle') // Center align
+            .attr('x', this.width * 0.05)
+            .attr('y', -this.height * 0.50) // Position above total score
+            .text('Strategy 2')
+            .style('font-size', '18px')
+            .style('font-weight', 'bold')
+            .style('fill', 'rgba(255, 87, 34, 0.8)')
+            .style('opacity', 0); // Initially hidden
             
         // Add average score displays below the totals
         this.leftAvgScore = this.histogramGroup.append('text')
             .attr('class', 'avg-score left-avg-score')
-            .attr('text-anchor', 'end')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', -this.width * 0.05)
             .attr('y', -this.height * 0.40) // Position below total score
             .text('Avg: 0')
             .style('font-size', '12px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('opacity', 0); // Initially hidden
             
         this.rightAvgScore = this.histogramGroup.append('text')
             .attr('class', 'avg-score right-avg-score')
-            .attr('text-anchor', 'start')
+            .attr('text-anchor', 'middle') // Center align
             .attr('x', this.width * 0.05)
             .attr('y', -this.height * 0.40) // Position below total score
             .text('Avg: 0')
             .style('font-size', '12px')
-            .style('font-weight', 'bold');
+            .style('font-weight', 'bold')
+            .style('opacity', 0); // Initially hidden
             
         // Set up scales for the population pyramid histogram
         this.setupHistogramScales();
@@ -455,6 +505,33 @@ class SimulationVisualizer {
         this.simulation = simulation;
         this.updateLegend();
         
+        // Set strategy labels with actual strategy names right from the start
+        if (this.simulation) {
+            const strategies = Object.keys(this.simulation.config.strategies);
+            if (strategies.length === 2) {
+                const strategy1 = strategies[0];
+                const strategy2 = strategies[1];
+                
+                // Update the strategy name labels with actual strategy names
+                this.leftStrategyNameLabel
+                    .text(strategiesModule.strategies[strategy1].name)
+                    .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
+                    
+                this.rightStrategyNameLabel
+                    .text(strategiesModule.strategies[strategy2].name)
+                    .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
+                    
+                // Also update the original strategy labels (for consistency)
+                this.leftStrategyLabel
+                    .text(strategiesModule.strategies[strategy1].name)
+                    .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
+                    
+                this.rightStrategyLabel
+                    .text(strategiesModule.strategies[strategy2].name)
+                    .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
+            }
+        }
+        
         // Initialize agent pool visualization
         if (this.simulation && this.simulation.agents) {
             this.initializeAgentPool();
@@ -466,15 +543,30 @@ class SimulationVisualizer {
      * This ensures a clean slate when starting a new simulation
      */
     reset() {
-        // Stop any ongoing force simulation
-        if (this.forceSimulation) {
-            this.forceSimulation.stop();
-        }
+        // Reset the simulation
+        this.simulation = null;
         
-        // Clear agent data
-        this.agentData = null;
+        // Reset scores
+        this.leftTotalScore.text('Total: 0');
+        this.rightTotalScore.text('Total: 0');
+        this.leftAvgScore.text('Avg: 0.00');
+        this.rightAvgScore.text('Avg: 0.00');
         
-        // Clear agent pool elements
+        // Hide all histogram elements
+        this.leftStrategyLabel.style('opacity', 0);
+        this.rightStrategyLabel.style('opacity', 0);
+        this.leftTotalScore.style('opacity', 0);
+        this.rightTotalScore.style('opacity', 0);
+        this.leftStrategyNameLabel.style('opacity', 0);
+        this.rightStrategyNameLabel.style('opacity', 0);
+        this.leftAvgScore.style('opacity', 0);
+        this.rightAvgScore.style('opacity', 0);
+        
+        // Reset winner labels
+        this.leftWinnerLabel.style('opacity', 0);
+        this.rightWinnerLabel.style('opacity', 0);
+        
+        // Clear the agent pool
         this.agentPoolGroup.selectAll('*').remove();
         
         // Clear histogram elements
@@ -636,23 +728,34 @@ class SimulationVisualizer {
     }
     
     /**
-     * Update the visualization with the current simulation state
-     * @param {Object} stats - Simulation statistics
+     * Update the visualization with new simulation statistics
+     * @param {Object} stats - Current simulation statistics
      */
     update(stats) {
-        if (!this.simulation || !stats) return;
+        if (!stats) return;
         
-        // Store the stats for potential reuse (e.g., when bin width changes)
-        this.lastStats = stats;
+        // Show all histogram elements when simulation starts
+        this.leftStrategyLabel.style('opacity', 1);
+        this.rightStrategyLabel.style('opacity', 1);
+        this.leftTotalScore.style('opacity', 1);
+        this.rightTotalScore.style('opacity', 1);
+        this.leftStrategyNameLabel.style('opacity', 1);
+        this.rightStrategyNameLabel.style('opacity', 1);
+        this.leftAvgScore.style('opacity', 1);
+        this.rightAvgScore.style('opacity', 1);
         
-        // Update agent pairings if there's an active pairing
+        // Update agent pairings if available
         if (stats.currentPairing) {
             this.updateAgentPairings(stats.currentPairing);
         }
         
+        // Update histogram with score distributions
+        if (stats.scoreDistributions && stats.strategyStats) {
+            this.updateHistogram(stats.scoreDistributions, stats.strategyStats);
+        }
+        
+        // Update agent pool
         this.updateAgentPool();
-        this.updateHistogram(stats.scoreDistributions, stats.strategyStats);
-        this.updateStats(stats);
     }
     
     /**
@@ -898,6 +1001,30 @@ class SimulationVisualizer {
         // Get strategies
         const strategies = Object.keys(scoreDistributions);
         if (strategies.length === 0) return;
+        
+        // Update strategy labels with actual strategy names
+        if (strategies.length === 2) {
+            const strategy1 = strategies[0];
+            const strategy2 = strategies[1];
+            
+            // Update the strategy name labels with actual strategy names
+            this.leftStrategyNameLabel
+                .text(strategiesModule.strategies[strategy1].name)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
+                
+            this.rightStrategyNameLabel
+                .text(strategiesModule.strategies[strategy2].name)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
+                
+            // Also update the original strategy labels (for consistency)
+            this.leftStrategyLabel
+                .text(strategiesModule.strategies[strategy1].name)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy1].name));
+                
+            this.rightStrategyLabel
+                .text(strategiesModule.strategies[strategy2].name)
+                .style('fill', this.colorScale(strategiesModule.strategies[strategy2].name));
+        }
         
         // Calculate bin width based on the slider value
         const binWidth = this.binWidth;

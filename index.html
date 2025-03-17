@@ -18,15 +18,18 @@
             <div class="strategy-selection">
                 <div class="strategy-group">
                     <label for="strategy1">Strategy 1:</label>
-                    <select id="strategy1">
-                        <option value="cooperator">Cooperator</option>
-                        <option value="defector">Defector</option>
-                        <option value="random">Random</option>
-                        <option value="tit-for-tat" selected>Tit for Tat</option>
-                        <option value="grudger">Grudger</option>
-                        <option value="detective">Detective</option>
-                        <option value="pavlov">Pavlov</option>
-                    </select>
+                    <div class="strategy-header">
+                        <select id="strategy1">
+                            <option value="cooperator">Cooperator</option>
+                            <option value="defector">Defector</option>
+                            <option value="random">Random</option>
+                            <option value="tit-for-tat" selected>Tit for Tat</option>
+                            <option value="grudger">Grudger</option>
+                            <option value="detective">Detective</option>
+                            <option value="pavlov">Pavlov</option>
+                        </select>
+                        <div class="color-indicator strategy1-color"></div>
+                    </div>
                     <div class="strategy-description" id="strategy1-description">
                         Starts by cooperating, then copies opponent's previous move.
                     </div>
@@ -34,15 +37,18 @@
                 
                 <div class="strategy-group">
                     <label for="strategy2">Strategy 2:</label>
-                    <select id="strategy2">
-                        <option value="cooperator">Cooperator</option>
-                        <option value="defector" selected>Defector</option>
-                        <option value="random">Random</option>
-                        <option value="tit-for-tat">Tit for Tat</option>
-                        <option value="grudger">Grudger</option>
-                        <option value="detective">Detective</option>
-                        <option value="pavlov">Pavlov</option>
-                    </select>
+                    <div class="strategy-header">
+                        <select id="strategy2">
+                            <option value="cooperator">Cooperator</option>
+                            <option value="defector" selected>Defector</option>
+                            <option value="random">Random</option>
+                            <option value="tit-for-tat">Tit for Tat</option>
+                            <option value="grudger">Grudger</option>
+                            <option value="detective">Detective</option>
+                            <option value="pavlov">Pavlov</option>
+                        </select>
+                        <div class="color-indicator strategy2-color"></div>
+                    </div>
                     <div class="strategy-description" id="strategy2-description">
                         Always defects regardless of opponent's moves.
                     </div>
@@ -62,7 +68,7 @@
                 <div class="param-group">
                     <label for="population-size">Population Size:</label>
                     <div class="slider-container">
-                        <input type="range" id="population-size" min="10" max="200" value="100" step="10">
+                        <input type="range" id="population-size" min="100" max="1000" value="100" step="100">
                         <span class="slider-value" id="population-size-value">100</span>
                     </div>
                     <div class="param-description">Number of agents in the simulation</div>

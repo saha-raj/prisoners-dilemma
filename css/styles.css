@@ -47,6 +47,34 @@ section {
     border-radius: 8px;
 }
 
+.strategy-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.strategy-header select {
+    flex: 1;
+    margin-bottom: 0;
+    margin-right: 10px;
+}
+
+.color-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+}
+
+.strategy1-color {
+    background-color: rgba(76, 175, 80, 0.8);
+}
+
+.strategy2-color {
+    background-color: rgba(255, 87, 34, 0.8);
+}
+
 .strategy-description {
     font-size: 0.9rem;
     color: #666;
