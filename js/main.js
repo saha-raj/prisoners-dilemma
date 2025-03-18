@@ -11,16 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const strategy1Select = document.getElementById('strategy1');
     const strategy2Select = document.getElementById('strategy2');
-    const strategy1Description = document.getElementById('strategy1-description');
-    const strategy2Description = document.getElementById('strategy2-description');
     const strategy1Color = document.querySelector('.strategy1-color');
     const strategy2Color = document.querySelector('.strategy2-color');
     const populationSizeInput = document.getElementById('population-size');
-    const populationSizeValue = document.getElementById('population-size-value');
     const totalGamesInput = document.getElementById('total-games');
-    const totalGamesValue = document.getElementById('total-games-value');
     const gamesPerPairingInput = document.getElementById('games-per-pairing');
-    const gamesPerPairingValue = document.getElementById('games-per-pairing-value');
     const startButton = document.getElementById('start-tournament');
     const stopButton = document.getElementById('stop-tournament');
     const resetButton = document.getElementById('reset-visualization');
@@ -95,33 +90,38 @@ document.addEventListener('DOMContentLoaded', function() {
     let nextGameTimeout = null;
     
     // Initialize the visualizer
-    visualizer = new SimulationVisualizer('tournament-container', {
-        width: document.getElementById('tournament-container').clientWidth,
-        height: 400
+    visualizer = new visualizationModule.SimulationVisualizer({
+        agentPoolContainer: 'agent-pool-container',
+        histogramContainer: 'histogram-container'
     });
     
     // Update slider values as they change
     populationSizeInput.addEventListener('input', function() {
-        populationSizeValue.textContent = this.value;
+        // We no longer have textContent to update as the min/max values are static
+        // Remove the line that tries to update the non-existent element
     });
     
     totalGamesInput.addEventListener('input', function() {
-        totalGamesValue.textContent = this.value;
+        // We no longer have textContent to update as the min/max values are static
+        // Remove the line that tries to update the non-existent element
     });
     
     gamesPerPairingInput.addEventListener('input', function() {
-        gamesPerPairingValue.textContent = this.value;
+        // We no longer have textContent to update as the min/max values are static
+        // Remove the line that tries to update the non-existent element
     });
     
-    // Update strategy descriptions when selections change
+    // Set default strategy selections
+    strategy1Select.value = 'tit-for-tat';
+    strategy2Select.value = 'defector';
+    
+    // Update strategy colors when selections change (but not descriptions)
     strategy1Select.addEventListener('change', function() {
-        strategy1Description.textContent = strategyDescriptions[this.value];
         strategy1Color.style.backgroundColor = strategyColors[this.value];
         updateProportionControl(currentProportion); // Update slider colors
     });
     
     strategy2Select.addEventListener('change', function() {
-        strategy2Description.textContent = strategyDescriptions[this.value];
         strategy2Color.style.backgroundColor = strategyColors[this.value];
         updateProportionControl(currentProportion); // Update slider colors
     });
@@ -293,19 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle window resize
     window.addEventListener('resize', () => {
         if (visualizer) {
-            // Get the new container width
-            const containerWidth = document.getElementById('tournament-container').clientWidth;
+            // The old tournament-container no longer exists
+            // Use the agent-pool and histogram containers instead
+            // Let the visualizer handle its own resize logic
+            visualizer.handleResize();
             
-            // Update visualizer dimensions
-            visualizer.width = containerWidth;
-            visualizer.height = 400; // Keep the same height
-            
-            // Update the SVG dimensions
-            visualizer.container.select('svg')
-                .attr('width', containerWidth)
-                .attr('height', 400);
-            
-            // Update the visualization
+            // Update the visualization if simulation exists
             if (simulation) {
                 const stats = simulation.getStatistics();
                 visualizer.update(stats);
