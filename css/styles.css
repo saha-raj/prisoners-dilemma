@@ -454,7 +454,7 @@ select option {
 /* For testing - give histogram a background color to match settings */
 .histogram-column {
   background-color: var(--control-bg);
-  border: 2px solid #3a86ff; /* Add a visible blue border */
+  /* border: 2px solid #3a86ff; /* Add a visible blue border */ 
   padding: 0; /* Remove specific padding to ensure consistency */
 }
 
@@ -817,11 +817,11 @@ select option {
 /* Additional testing styles to visualize content */
 /* Agent pool column styling for testing */
 .agent-pool-column {
-  border: 2px solid #06d6a0; /* Add a visible green border */
+  /* border: 2px solid #06d6a0; /* Add a visible green border */
 }
 
 #agent-pool-container svg {
-  border: 2px dashed #9b5de5; /* Purple dashed border for the agent pool SVG */
+  /* border: 2px dashed #9b5de5; /* Purple dashed border for the agent pool SVG */
 }
 
 /* Strategy selection when placed above agent pool */
