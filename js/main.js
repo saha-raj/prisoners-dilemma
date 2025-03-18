@@ -45,29 +45,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add event listener for proportion slider
     proportionSlider.addEventListener('input', function() {
+        // Calculate proportion directly from slider value
         currentProportion = this.value / 100;
         updateProportionControl(currentProportion);
     });
     
     // Function to update the proportion control UI
     function updateProportionControl(proportion) {
-        // Update slider value
-        proportionSlider.value = proportion * 100;
-        
-        // Update labels
-        proportionLabelLeft.textContent = `${Math.round(proportion * 100)}%`;
-        proportionLabelRight.textContent = `${Math.round((1 - proportion) * 100)}%`;
+        // Update labels - directly use slider value for labels
+        const sliderValue = proportionSlider.value;
+        proportionLabelLeft.textContent = `${sliderValue}%`;
+        proportionLabelRight.textContent = `${100 - sliderValue}%`;
         
         // Get current strategy colors
-        const leftColor = strategyColors[strategy1Select.value];
-        const rightColor = strategyColors[strategy2Select.value];
+        const leftColor = strategy1Select.value ? strategyColors[strategy1Select.value] : '#ccc';
+        const rightColor = strategy2Select.value ? strategyColors[strategy2Select.value] : '#ccc';
         
-        // Update slider background dynamically with actual strategy colors
-        const percent = proportion * 100;
+        // Update slider background to match button position exactly
         proportionSlider.style.background = `linear-gradient(to right, 
             ${leftColor} 0%, 
-            ${leftColor} ${percent}%, 
-            ${rightColor} ${percent}%, 
+            ${leftColor} ${sliderValue}%, 
+            ${rightColor} ${sliderValue}%, 
             ${rightColor} 100%)`;
     }
     
@@ -95,40 +93,61 @@ document.addEventListener('DOMContentLoaded', function() {
         histogramContainer: 'histogram-container'
     });
     
-    // Update slider values as they change
-    populationSizeInput.addEventListener('input', function() {
-        // We no longer have textContent to update as the min/max values are static
-        // Remove the line that tries to update the non-existent element
-    });
+    // Custom formatting for strategy selects to maintain format when selected
+    function formatStrategySelects() {
+        const formatSelect = (select) => {
+            if (select.selectedIndex > 0) {
+                const option = select.options[select.selectedIndex];
+                const text = option.text;
+                const parts = text.split(': ');
+                
+                if (parts.length === 2) {
+                    const name = parts[0].trim();
+                    const desc = parts[1].trim();
+                    
+                    // Apply the custom formatting - keep the height consistent
+                    select.style.height = '62px';
+                }
+            }
+        };
+        
+        // Format both strategy selects
+        formatSelect(strategy1Select);
+        formatSelect(strategy2Select);
+    }
     
-    totalGamesInput.addEventListener('input', function() {
-        // We no longer have textContent to update as the min/max values are static
-        // Remove the line that tries to update the non-existent element
-    });
-    
-    gamesPerPairingInput.addEventListener('input', function() {
-        // We no longer have textContent to update as the min/max values are static
-        // Remove the line that tries to update the non-existent element
-    });
-    
-    // Set default strategy selections
-    strategy1Select.value = 'tit-for-tat';
-    strategy2Select.value = 'defector';
-    
-    // Update strategy colors when selections change (but not descriptions)
+    // Apply formatting when the selects change
     strategy1Select.addEventListener('change', function() {
         strategy1Color.style.backgroundColor = strategyColors[this.value];
         updateProportionControl(currentProportion); // Update slider colors
+        formatStrategySelects(); // Apply custom formatting
     });
     
     strategy2Select.addEventListener('change', function() {
         strategy2Color.style.backgroundColor = strategyColors[this.value];
         updateProportionControl(currentProportion); // Update slider colors
+        formatStrategySelects(); // Apply custom formatting
     });
     
-    // Initialize color indicators with default selected strategies
-    strategy1Color.style.backgroundColor = strategyColors[strategy1Select.value];
-    strategy2Color.style.backgroundColor = strategyColors[strategy2Select.value];
+    // Update slider values as they change
+    populationSizeInput.addEventListener('input', function() {
+        const populationSizeValue = document.querySelector('.param-group:nth-child(2) .slider-max');
+        populationSizeValue.textContent = this.value;
+    });
+    
+    totalGamesInput.addEventListener('input', function() {
+        const totalGamesValue = document.querySelector('.param-group:nth-child(3) .slider-max');
+        totalGamesValue.textContent = this.value;
+    });
+    
+    gamesPerPairingInput.addEventListener('input', function() {
+        const gamesPerPairingValue = document.querySelector('.param-group:nth-child(4) .slider-max');
+        gamesPerPairingValue.textContent = this.value;
+    });
+    
+    // Initialize color indicators (with neutral colors since no strategies are selected initially)
+    strategy1Color.style.backgroundColor = '#ccc';
+    strategy2Color.style.backgroundColor = '#ccc';
     
     // Start tournament button click handler
     startButton.addEventListener('click', function() {

@@ -24,11 +24,12 @@
   
   /* Colors */
   --text-color: #333;
-  --background-color: #f5f5f5;
-  --content-bg: #f5f5f5;
+  --background-color: #efefef;
+  --content-bg: #efefef;
   --footer-bg: #f5f5f5;
   --author-text: #6c757d;
   --footer-text: #adb5bd;
+  --sim-bg: #fff;
   --card-bg: white;
   --card-shadow: rgba(0, 0, 0, 0.1);
   
@@ -131,6 +132,7 @@ li {
   font-family: var(--author-font);
   color: var(--author-text);
   font-size: var(--author-size);
+  margin-bottom: 4rem;
 }
 
 /* Content */
@@ -149,15 +151,15 @@ li {
 
 /* Simulation section - replaces both simulation-block and sequence-block */
 .simulation-container {
-  background-color: var(--card-bg);
+  background-color: var(--sim-bg);
   padding: 20px 0;
   margin: 2.5rem 0;
   width: 100vw;
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  /* border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color); */
 }
 
 .simulation-container h2 {
@@ -220,9 +222,9 @@ li {
   min-height: 2em; /* Ensure consistent height even when empty */
 }
 
-/* Hide the color indicator dots */
+/* Color indicator styling */
 .color-indicator {
-  display: none;
+  display: none; /* Hide color indicators */
 }
 
 /* Proportion control styling */
@@ -262,7 +264,8 @@ li {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-btn);
+  background: white;
+  border: 2px solid #577590;
   cursor: pointer;
 }
 
@@ -270,7 +273,8 @@ li {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-btn);
+  background: white;
+  border: 2px solid #577590;
   cursor: pointer;
 }
 
@@ -329,7 +333,8 @@ li {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-btn);
+  background: white;
+  border: 2px solid #577590;
   cursor: pointer;
 }
 
@@ -337,17 +342,27 @@ li {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary-btn);
+  background: white;
+  border: 2px solid #577590;
   cursor: pointer;
 }
 
 .slider-minmax {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Return to space-between for proportion slider */
   width: 100%;
 }
 
-.slider-min {
+/* Only hide min values for sliders other than proportion */
+.param-group:not(:first-child) .slider-min {
+  display: none; /* Hide min values for all except proportion slider */
+  text-align: left;
+  font-size: 12px;
+}
+
+/* For proportion slider specifically */
+.param-group:first-child .slider-min {
+  display: block; /* Show for proportion slider */
   text-align: left;
   font-size: 12px;
 }
@@ -406,9 +421,11 @@ li {
   background-color: #e9ecef;
 }
 
+/* Button disabled state */
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  border-color: #ddd; /* Gray border for disabled state */
 }
 
 /* Form controls styling */
@@ -425,7 +442,16 @@ select {
   cursor: pointer;
   outline: none;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  height: 42px; /* Increased height for better readability */
+  height: 62px; /* Increased height to fit two lines by default */
+  /* Custom select styling for flat, minimalist appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='8' fill='none' stroke='%23666' stroke-width='1.5'><path d='M1,1 L7,7 L13,1' /></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  white-space: normal; /* Allow text to wrap */
 }
 
 select:focus {
@@ -433,12 +459,32 @@ select:focus {
 }
 
 select option {
-  padding: 8px 12px;
+  padding: 12px;
   font-size: 0.9rem;
-  line-height: 1.4;
-  height: auto;
-  /* Ensure options have enough space for the text */
-  min-height: 26px;
+  line-height: 1.5;
+  min-height: 62px; /* Match the height of the select */
+  white-space: normal;
+  text-align: left;
+}
+
+select option::before {
+  content: attr(value);
+  display: inline;
+  font-weight: 600;
+}
+
+/* Style for strategy name and description in dropdowns */
+.strategy-name {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.strategy-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: #999;
+  font-style: italic;
 }
 
 /* Visualization columns - remove borders */
@@ -505,12 +551,17 @@ select option {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--primary-btn);
+  color: #adb6c4; /* Updated color as requested */
   font-weight: bold;
   font-size: 13px;
-  margin-left: 12px;
-  vertical-align: middle;
   font-family: var(--ui-font);
+  position: absolute; /* Position absolutely within agent-pool-visualization */
+  bottom: 45px; /* Moved up from 15px to prevent being cut off */
+  right: 15px; /* Position at right */
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  padding: 6px 12px;
+  border-radius: 4px;
+  z-index: 100; /* Ensure it's above other elements */
 }
 
 #running-indicator.hidden {
@@ -518,10 +569,10 @@ select option {
 }
 
 .spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid transparent;
-  border-top-color: var(--primary-btn);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(173, 182, 196, 0.3); /* Add faint circular track */
+  border-top-color: #adb6c4; /* Keep the animated part more visible */
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -639,66 +690,77 @@ select option {
   font-family: var(--ui-font);
   font-size: 12px !important;
 }
+.section-divider {
+    border: 0;
+    height: 1px;
+    background-color: var(--footer-text);
+    opacity: 0.3;
+    margin: 4rem auto;
+    width: 100%;
+    max-width: var(--content-width);
+}
 
 /* More Stories section */
 .more-stories {
-  background: var(--background-color);
-  padding: var(--section-spacing) 0;
-  margin-top: 3rem;
-  width: 100%;
+    background: var(--background-color);
+    padding: var(--section-spacing) 0;
+    margin-top: 4rem;
+    width: 100%;
 }
 
 .more-stories .content {
-  max-width: 100%;
-  padding: 0 2rem;
-  background-color: transparent;
+    max-width: 100%;
+    padding: 0 2rem;
+    background-color: transparent;
 }
 
 .stories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  align-items: start;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: start;
 }
 
 .story-card {
-  background: var(--card-bg);
-  overflow: hidden;
-  border: 1px solid #eaeaea;
-  display: flex;
-  flex-direction: column;
-  height: auto;
+    background: var(--card-bg);
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    border: 1px solid #eaeaea;
+    display: flex;
+    flex-direction: column;
+    height: auto;
 }
 
 .story-card img {
-  width: 100%;
-  height: 180px;
-  display: block;
-  object-fit: cover;
-  background-color: #f5f5f5;
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    background-color: #000;
 }
 
 .story-card-content {
-  padding: 1rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .story-card h4 {
-  font-size: var(--h4-size);
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
+    font-size: var(--h4-size);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
 }
 
 .story-card p {
-  margin: 0;
-  font-size: var(--small-text);
-  color: var(--footer-text);
+    margin: 0;
+    font-size: var(--small-text);
+    color: var(--footer-text);
 }
 
 /* Center the "More Stories" heading */
@@ -871,12 +933,17 @@ select option {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--primary-btn);
+  color: #adb6c4; /* Updated color as requested */
   font-weight: bold;
   font-size: 13px;
-  margin-left: 12px;
-  vertical-align: middle;
   font-family: var(--ui-font);
+  position: absolute; /* Position absolutely within agent-pool-visualization */
+  bottom: 45px; /* Moved up from 15px to prevent being cut off */
+  right: 15px; /* Position at right */
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  padding: 6px 12px;
+  border-radius: 4px;
+  z-index: 100; /* Ensure it's above other elements */
 }
 
 #running-indicator.hidden {
@@ -884,10 +951,10 @@ select option {
 }
 
 .spinner {
-  width: 12px;
-  height: 12px;
-  border: 2px solid transparent;
-  border-top-color: var(--primary-btn);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(173, 182, 196, 0.3); /* Add faint circular track */
+  border-top-color: #adb6c4; /* Keep the animated part more visible */
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1040,13 +1107,13 @@ select option {
   height: auto;
 }
 
-.story-card img {
+/* .story-card img {
   width: 100%;
   height: 180px;
   display: block;
   object-fit: cover;
   background-color: #f5f5f5;
-}
+} */
 
 .story-card-content {
   padding: 1rem;

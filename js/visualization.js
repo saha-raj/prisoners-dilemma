@@ -1169,9 +1169,6 @@ class SimulationVisualizer {
             this.rightStrategyLabel.style('display', 'none');
         }
         
-        // Calculate bin width based on the slider value
-        const binWidth = this.binWidth;
-        
         // Determine the max score from the data
         let maxScore = this.minScore;
         strategies.forEach(strategyId => {
@@ -1188,6 +1185,9 @@ class SimulationVisualizer {
         if (maxScore <= this.minScore) {
             maxScore = this.minScore + 10;
         }
+        
+        // Calculate bin width dynamically as 1/10 of the maximum score
+        const binWidth = Math.max(1, Math.ceil(maxScore / 10));
         
         // Update the y scale with the new max score
         this.histogramYScale = d3.scaleLinear()

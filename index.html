@@ -35,11 +35,7 @@
 
         <div class="simulation-container">
             <h2>
-                Prisoner's Dilemma Simulation
-                <span id="running-indicator" class="hidden">
-                    <div class="spinner"></div>
-                    <span>Running...</span>
-                </span>
+                <!-- Removed running indicator from here -->
             </h2>
             
             <div class="simulation-grid">
@@ -52,7 +48,7 @@
                             <label for="proportion-slider">Population Proportion:</label>
                             <div class="param-description">Proportion of population of each group</div>
                             <div class="slider-container">
-                                <input type="range" id="proportion-slider" min="10" max="90" value="50" step="5" class="proportion-slider">
+                                <input type="range" id="proportion-slider" min="5" max="95" value="50" step="5" class="proportion-slider">
                                 <div class="slider-minmax">
                                     <div class="slider-min" id="proportion-label-left">50%</div>
                                     <div class="slider-max" id="proportion-label-right">50%</div>
@@ -67,7 +63,7 @@
                                 <input type="range" id="population-size" min="100" max="1000" value="100" step="100">
                                 <div class="slider-minmax">
                                     <div class="slider-min">100</div>
-                                    <div class="slider-max">1000</div>
+                                    <div class="slider-max">100</div>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +75,7 @@
                                 <input type="range" id="total-games" min="100" max="10000" value="1000" step="100">
                                 <div class="slider-minmax">
                                     <div class="slider-min">100</div>
-                                    <div class="slider-max">10000</div>
+                                    <div class="slider-max">1000</div>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +87,7 @@
                                 <input type="range" id="games-per-pairing" min="1" max="50" value="10" step="1">
                                 <div class="slider-minmax">
                                     <div class="slider-min">1</div>
-                                    <div class="slider-max">50</div>
+                                    <div class="slider-max">10</div>
                                 </div>
                             </div>
                         </div>
@@ -114,13 +110,13 @@
                                 <div class="strategy-header">
                                     <select id="strategy1" aria-label="Strategy 1">
                                         <option value="" disabled selected>Strategy 1</option>
-                                        <option value="cooperator">Cooperator - Always cooperates</option>
-                                        <option value="defector">Defector - Always defects</option>
-                                        <option value="random">Random - Randomly cooperates or defects</option>
-                                        <option value="tit-for-tat">Tit for Tat - Copies opponent's previous move</option>
-                                        <option value="grudger">Grudger - Cooperates until defected against</option>
-                                        <option value="detective">Detective - Tests then adapts</option>
-                                        <option value="pavlov">Pavlov - Win-Stay, Lose-Shift</option>
+                                        <option value="cooperator">Cooperator: Always cooperates</option>
+                                        <option value="defector">Defector: Always defects</option>
+                                        <option value="random">Random: Randomly cooperates or defects</option>
+                                        <option value="tit-for-tat">Tit for Tat: Copies opponent's previous move</option>
+                                        <option value="grudger">Grudger: Cooperates until defected against</option>
+                                        <option value="detective">Detective: Tests then adapts</option>
+                                        <option value="pavlov">Pavlov: Win-Stay, Lose-Shift</option>
                                     </select>
                                     <div class="color-indicator strategy1-color"></div>
                                 </div>
@@ -130,20 +126,26 @@
                                 <div class="strategy-header">
                                     <select id="strategy2" aria-label="Strategy 2">
                                         <option value="" disabled selected>Strategy 2</option>
-                                        <option value="cooperator">Cooperator - Always cooperates</option>
-                                        <option value="defector">Defector - Always defects</option>
-                                        <option value="random">Random - Randomly cooperates or defects</option>
-                                        <option value="tit-for-tat">Tit for Tat - Copies opponent's previous move</option>
-                                        <option value="grudger">Grudger - Cooperates until defected against</option>
-                                        <option value="detective">Detective - Tests then adapts</option>
-                                        <option value="pavlov">Pavlov - Win-Stay, Lose-Shift</option>
+                                        <option value="cooperator">Cooperator: Always cooperates</option>
+                                        <option value="defector">Defector: Always defects</option>
+                                        <option value="random">Random: Randomly cooperates or defects</option>
+                                        <option value="tit-for-tat">Tit for Tat: Copies opponent's previous move</option>
+                                        <option value="grudger">Grudger: Cooperates until defected against</option>
+                                        <option value="detective">Detective: Tests then adapts</option>
+                                        <option value="pavlov">Pavlov: Win-Stay, Lose-Shift</option>
                                     </select>
                                     <div class="color-indicator strategy2-color"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="agent-pool-visualization"></div>
+                    <div class="agent-pool-visualization">
+                        <!-- Added running indicator here at the bottom right -->
+                        <span id="running-indicator" class="hidden">
+                            <div class="spinner"></div>
+                            <span>Running...</span>
+                        </span>
+                    </div>
                 </div>
                 
                 <!-- Histogram Column -->
@@ -190,9 +192,12 @@
             </p>
         </div>
     </div>
-<div class="more-stories">
-    <div class="content">
-        <h3>More Visual Stories</h3>
+
+    <div class="section-divider"></div>
+
+    <div class="more-stories">
+        <div class="content">
+            <h3>More Visual Stories</h3>
         <div class="stories-grid">
             <div class="story-card">
                 <img src="images/stories/tipping-pts-earth-sim.gif" alt="Story 1">
@@ -209,10 +214,10 @@
                 </div>
             </div>
             <div class="story-card">
-                <img src="path/to/image3.jpg" alt="Story 3">
+                <img src="images/stories/mangroves.gif" alt="Story 3">
                 <div class="story-card-content">
-                    <h4>Sea Ice and the Polar Vortex</h4>
-                    <p>The effects of sea ice loss on the polar vortex...</p>
+                    <h4>How Mangroves Slow Coastal Erosion</h4>
+                    <p>Mangroves slow coastal erosion by stabilizing the shoreline...</p>
                 </div>
             </div>
         </div>
