@@ -725,11 +725,15 @@ select option::before {
     align-items: start;
 }
 
+.story-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
 .story-card {
     background: var(--card-bg);
-    border-radius: 0;
     overflow: hidden;
-    box-shadow: none;
     border: 1px solid #eaeaea;
     display: flex;
     flex-direction: column;
