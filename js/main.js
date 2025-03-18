@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calculate proportion directly from slider value
         currentProportion = this.value / 100;
         updateProportionControl(currentProportion);
+        // Reset visualization if simulation exists and is complete
+        if (simulation && simulation.isComplete) {
+            visualizer.reset();
+            simulation = null;
+        }
     });
     
     // Function to update the proportion control UI
@@ -116,42 +121,90 @@ document.addEventListener('DOMContentLoaded', function() {
         formatSelect(strategy2Select);
     }
     
+    // Initialize color indicators (with neutral colors since no strategies are selected initially)
+    strategy1Color.style.backgroundColor = '#ccc';
+    strategy2Color.style.backgroundColor = '#ccc';
+    
+    // Function to validate strategy selections and update start button state
+    function updateStartButtonState() {
+        const strategy1Selected = strategy1Select.value !== '';
+        const strategy2Selected = strategy2Select.value !== '';
+        startButton.disabled = !(strategy1Selected && strategy2Selected);
+    }
+    
+    // Apply initial button state
+    updateStartButtonState();
+    
+    // Function to update dropdown options
+    function updateStrategyOptions(selectedStrategy, sourceSelect, targetSelect) {
+        // Enable all options in the target select first
+        Array.from(targetSelect.options).forEach(option => {
+            option.disabled = false;
+        });
+        
+        // If a strategy is selected, disable that option in the other dropdown
+        if (selectedStrategy) {
+            const matchingOption = Array.from(targetSelect.options).find(option => option.value === selectedStrategy);
+            if (matchingOption) {
+                matchingOption.disabled = true;
+            }
+        }
+    }
+    
     // Apply formatting when the selects change
     strategy1Select.addEventListener('change', function() {
-        strategy1Color.style.backgroundColor = strategyColors[this.value];
+        strategy1Color.style.backgroundColor = this.value ? strategyColors[this.value] : '#ccc';
         updateProportionControl(currentProportion); // Update slider colors
         formatStrategySelects(); // Apply custom formatting
+        updateStartButtonState(); // Update start button state
+        updateStrategyOptions(this.value, strategy1Select, strategy2Select); // Update strategy2 options
     });
     
     strategy2Select.addEventListener('change', function() {
-        strategy2Color.style.backgroundColor = strategyColors[this.value];
+        strategy2Color.style.backgroundColor = this.value ? strategyColors[this.value] : '#ccc';
         updateProportionControl(currentProportion); // Update slider colors
         formatStrategySelects(); // Apply custom formatting
+        updateStartButtonState(); // Update start button state
+        updateStrategyOptions(this.value, strategy2Select, strategy1Select); // Update strategy1 options
     });
     
     // Update slider values as they change
     populationSizeInput.addEventListener('input', function() {
         const populationSizeValue = document.querySelector('.param-group:nth-child(2) .slider-max');
         populationSizeValue.textContent = this.value;
+        // Reset visualization if simulation exists and is complete
+        if (simulation && simulation.isComplete) {
+            visualizer.reset();
+            simulation = null;
+        }
     });
     
     totalGamesInput.addEventListener('input', function() {
         const totalGamesValue = document.querySelector('.param-group:nth-child(3) .slider-max');
         totalGamesValue.textContent = this.value;
+        // Reset visualization if simulation exists and is complete
+        if (simulation && simulation.isComplete) {
+            visualizer.reset();
+            simulation = null;
+        }
     });
     
     gamesPerPairingInput.addEventListener('input', function() {
         const gamesPerPairingValue = document.querySelector('.param-group:nth-child(4) .slider-max');
         gamesPerPairingValue.textContent = this.value;
+        // Reset visualization if simulation exists and is complete
+        if (simulation && simulation.isComplete) {
+            visualizer.reset();
+            simulation = null;
+        }
     });
-    
-    // Initialize color indicators (with neutral colors since no strategies are selected initially)
-    strategy1Color.style.backgroundColor = '#ccc';
-    strategy2Color.style.backgroundColor = '#ccc';
     
     // Start tournament button click handler
     startButton.addEventListener('click', function() {
         if (isRunning) return;
+        
+        // Reset stop flag
+        stopRequested = false;
         
         // Disable controls during simulation
         startButton.disabled = true;

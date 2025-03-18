@@ -84,6 +84,20 @@ class SimulationVisualizer {
             .attr('class', 'agent-pool')
             .attr('transform', `translate(${this.agentPoolWidth / 2}, ${this.agentPoolHeight * 0.45})`);
             
+        // Define the radius of the circular area - make it slightly smaller to ensure it fits
+        this.areaRadius = Math.min(this.agentPoolWidth * 0.4, this.agentPoolHeight / 2) * 0.9;
+            
+        // Create a boundary circle
+        this.agentPoolGroup.append('circle')
+            .attr('class', 'boundary-circle')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', this.areaRadius)
+            .attr('fill', 'none')
+            .attr('stroke', '#ddd')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '3,3');
+            
         // Create a group for the histogram 
         this.histogramGroup = this.histogramSvg.append('g')
             .attr('class', 'histogram')
@@ -116,7 +130,6 @@ class SimulationVisualizer {
             .attr('x', -this.histogramWidth * 0.25)
             .attr('y', -this.histogramHeight * 0.52) // Position ABOVE strategy name
             .attr('text-anchor', 'middle')
-            .text('WINNER!')
             .style('opacity', 0);
         
         this.rightWinnerLabel = this.histogramGroup.append('text')
@@ -124,27 +137,7 @@ class SimulationVisualizer {
             .attr('x', this.histogramWidth * 0.25)
             .attr('y', -this.histogramHeight * 0.52) // Position ABOVE strategy name
             .attr('text-anchor', 'middle')
-            .text('WINNER!')
             .style('opacity', 0);
-        
-        // // Add "Total Score:" labels - MOVED UP AND CLOSER TOGETHER
-        // this.histogramGroup.append('text')
-        //     .attr('class', 'total-score-label')
-        //     .attr('x', -this.histogramWidth * 0.25)
-        //     .attr('y', -this.histogramHeight * 0.42)
-        //     .attr('text-anchor', 'middle')
-        //     .text('Total Score:')
-        //     .style('font-size', '12px')
-        //     .style('fill', '#555');
-            
-        // this.histogramGroup.append('text')
-        //     .attr('class', 'total-score-label')
-        //     .attr('x', this.histogramWidth * 0.25)
-        //     .attr('y', -this.histogramHeight * 0.42)
-        //     .attr('text-anchor', 'middle')
-        //     .text('Total Score:')
-        //     .style('font-size', '12px')
-        //     .style('fill', '#555');
         
         // Add total score displays - EXACTLY aligned with labels above
         this.leftTotalScore = this.histogramGroup.append('text')
@@ -154,7 +147,8 @@ class SimulationVisualizer {
             .attr('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', '14px')
-            .text('0');
+            .style('opacity', 0)
+            .text('');
             
         this.rightTotalScore = this.histogramGroup.append('text')
             .attr('class', 'total-score')
@@ -163,27 +157,9 @@ class SimulationVisualizer {
             .attr('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', '14px')
-            .text('0');
-        
-        // // Add "Avg Score:" labels - MOVED UP AND CLOSER
-        // this.histogramGroup.append('text')
-        //     .attr('class', 'avg-score-label')
-        //     .attr('x', -this.histogramWidth * 0.25)
-        //     .attr('y', -this.histogramHeight * 0.34)
-        //     .attr('text-anchor', 'middle')
-        //     .text('Avg Score:')
-        //     .style('font-size', '12px')
-        //     .style('fill', '#555');
+            .style('opacity', 0)
+            .text('');
             
-        // this.histogramGroup.append('text')
-        //     .attr('class', 'avg-score-label')
-        //     .attr('x', this.histogramWidth * 0.25)
-        //     .attr('y', -this.histogramHeight * 0.34)
-        //     .attr('text-anchor', 'middle')
-        //     .text('Avg Score:')
-        //     .style('font-size', '12px')
-        //     .style('fill', '#555');
-        
         // Add average score displays - MOVED UP AND CLOSER
         this.leftAvgScore = this.histogramGroup.append('text')
             .attr('class', 'avg-score')
@@ -192,7 +168,8 @@ class SimulationVisualizer {
             .attr('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', '14px')
-            .text('0');
+            .style('opacity', 0)
+            .text('');
             
         this.rightAvgScore = this.histogramGroup.append('text')
             .attr('class', 'avg-score')
@@ -201,8 +178,9 @@ class SimulationVisualizer {
             .attr('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('font-size', '14px')
-            .text('0');
-        
+            .style('opacity', 0)
+            .text('');
+            
         // Original strategy labels - Always centered and with consistent placement relative to other elements
         this.leftStrategyLabel = this.histogramGroup.append('text')
             .attr('class', 'strategy-label')
@@ -210,7 +188,7 @@ class SimulationVisualizer {
             .attr('y', -this.histogramHeight * 0.45)
             .attr('text-anchor', 'middle')
             .style('font-size', '16px')
-            .style('display', 'none');
+            .style('opacity', 0);
             
         this.rightStrategyLabel = this.histogramGroup.append('text')
             .attr('class', 'strategy-label')
@@ -218,24 +196,28 @@ class SimulationVisualizer {
             .attr('y', -this.histogramHeight * 0.45)
             .attr('text-anchor', 'middle')
             .style('font-size', '16px')
-            .style('display', 'none');
+            .style('opacity', 0);
             
         // Create axes for histogram
         this.xAxisLeft = this.histogramGroup.append('g')
-            .attr('class', 'x-axis-left');
+            .attr('class', 'x-axis-left')
+            .style('opacity', 0);
             
         this.xAxisRight = this.histogramGroup.append('g')
-            .attr('class', 'x-axis-right');
+            .attr('class', 'x-axis-right')
+            .style('opacity', 0);
             
         this.yAxis = this.histogramGroup.append('g')
-            .attr('class', 'y-axis');
+            .attr('class', 'y-axis')
+            .style('opacity', 0);
             
         // Add axis label for histogram
-        this.histogramGroup.append('text')
+        this.xAxisLabel = this.histogramGroup.append('text')
             .attr('class', 'x-axis-label')
             .attr('text-anchor', 'middle')
             .attr('x', 0)
-            .attr('y', this.histogramHeight * 0.42) // Adjusted position to avoid overlap
+            .attr('y', this.histogramHeight * 0.42)
+            .style('opacity', 0)
             .text('Number of Agents');
             
         // Set up scales for the population pyramid histogram
@@ -277,6 +259,11 @@ class SimulationVisualizer {
         // Update group positions - ADJUSTED AGENT POOL POSITION WITH OFFSET
         this.agentPoolGroup
             .attr('transform', `translate(${this.agentPoolWidth / 2}, ${this.agentPoolHeight * 0.45})`);
+            
+        // Update the area radius and boundary circle
+        this.areaRadius = Math.min(this.agentPoolWidth * 0.4, this.agentPoolHeight / 2) * 0.9;
+        this.agentPoolGroup.select('.boundary-circle')
+            .attr('r', this.areaRadius);
             
         this.histogramGroup
             .attr('transform', `translate(${this.histogramWidth / 2}, ${this.histogramHeight / 2})`);
@@ -357,15 +344,15 @@ class SimulationVisualizer {
         // We use separate left and right scales for the mirrored histograms
         
         // Width of the histogram (half of the full width for left/right)
-        const histogramHalfWidth = this.histogramWidth * 0.40; // INCREASED from 0.35 to 0.40
+        const histogramHalfWidth = this.histogramWidth * 0.40;
         
         // X scales for left and right histograms (starting from center)
         this.histogramXScaleLeft = d3.scaleLinear()
-            .domain([0, 20]) // Dummy initial domain
+            .domain([0, 20])
             .range([0, -histogramHalfWidth]);
             
         this.histogramXScaleRight = d3.scaleLinear()
-            .domain([0, 20]) // Dummy initial domain
+            .domain([0, 20])
             .range([0, histogramHalfWidth]);
             
         // Y scale for histogram (shared between left and right)
@@ -373,37 +360,38 @@ class SimulationVisualizer {
             .domain([this.minScore, this.maxScore])
             .range([this.histogramHeight * 0.35, -this.histogramHeight * 0.15]);
             
-        // Add a center line to divide left and right histograms
-        this.histogramGroup.append('line')
-            .attr('class', 'center-line')
-            .attr('x1', 0)
-            .attr('y1', this.histogramYScale(this.minScore))
-            .attr('x2', 0)
-            .attr('y2', this.histogramYScale(this.maxScore))
-            .attr('stroke', '#ccc')
-            .attr('stroke-width', 1);
-        
-        // Set up axes with initial values
-        // These will be updated in updateHistogram
-        const xAxisYPos = this.histogramYScale(Math.max(0, this.minScore)) + 5; // Add a small offset for clarity
-        
-        // Define default tick values for initial setup
-        const defaultMaxBinCount = 20; // Default max bin count
-        const leftTicks = [defaultMaxBinCount, defaultMaxBinCount / 2];
-        const rightTicks = [defaultMaxBinCount / 2, defaultMaxBinCount];
-        
-        // Create x-axes with the correct positioning and tick values
-        this.xAxisLeft
-            .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleLeft).tickValues(leftTicks))
-            .call(g => g.select('.domain').remove()); // Remove axis line
+        // Only add the center line if simulation is running
+        if (this.simulation && this.simulation.isRunning) {
+            this.histogramGroup.append('line')
+                .attr('class', 'center-line')
+                .attr('x1', 0)
+                .attr('y1', this.histogramYScale(this.minScore))
+                .attr('x2', 0)
+                .attr('y2', this.histogramYScale(this.maxScore))
+                .attr('stroke', '#ccc')
+                .attr('stroke-width', 1);
+                
+            // Set up axes with initial values only if simulation is running
+            const xAxisYPos = this.histogramYScale(Math.max(0, this.minScore)) + 5;
             
-        this.xAxisRight
-            .attr('transform', `translate(0, ${xAxisYPos})`)
-            .call(d3.axisBottom(this.histogramXScaleRight).tickValues(rightTicks))
-            .call(g => g.select('.domain').remove()); // Remove axis line
+            const defaultMaxBinCount = 20;
+            const leftTicks = [defaultMaxBinCount, defaultMaxBinCount / 2];
+            const rightTicks = [defaultMaxBinCount / 2, defaultMaxBinCount];
             
-        // Initially hide the y-axis until simulation starts
+            this.xAxisLeft
+                .attr('transform', `translate(0, ${xAxisYPos})`)
+                .call(d3.axisBottom(this.histogramXScaleLeft).tickValues(leftTicks))
+                .call(g => g.select('.domain').remove()); // Remove axis line
+                
+            this.xAxisRight
+                .attr('transform', `translate(0, ${xAxisYPos})`)
+                .call(d3.axisBottom(this.histogramXScaleRight).tickValues(rightTicks))
+                .call(g => g.select('.domain').remove()); // Remove axis line
+        }
+        
+        // Initially hide all axes
+        this.xAxisLeft.selectAll('*').remove();
+        this.xAxisRight.selectAll('*').remove();
         this.yAxis.selectAll('*').remove();
     }
     
@@ -647,6 +635,19 @@ class SimulationVisualizer {
         this.simulation = simulation;
         this.updateLegend();
         
+        // Create boundary circle if it doesn't exist
+        if (this.agentPoolGroup.select('.boundary-circle').empty()) {
+            this.agentPoolGroup.append('circle')
+                .attr('class', 'boundary-circle')
+                .attr('cx', 0)
+                .attr('cy', 0)
+                .attr('r', this.areaRadius)
+                .attr('fill', 'none')
+                .attr('stroke', '#ddd')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', '3,3');
+        }
+        
         // Set strategy labels with actual strategy names right from the start
         if (this.simulation) {
             const strategies = Object.keys(this.simulation.config.strategies);
@@ -692,28 +693,44 @@ class SimulationVisualizer {
         // Reset the simulation
         this.simulation = null;
         
-        // Reset scores
-        this.leftTotalScore.text('Total: 0');
-        this.rightTotalScore.text('Total: 0');
-        this.leftAvgScore.text('Avg: 0.00');
-        this.rightAvgScore.text('Avg: 0.00');
+        // Store the boundary circle if it exists
+        const boundaryCircle = this.agentPoolGroup.select('.boundary-circle');
         
-        // Hide all histogram elements
+        // Clear the agent pool except for the boundary circle
+        this.agentPoolGroup.selectAll('*').remove();
+        
+        // Re-add the boundary circle if it existed
+        if (!boundaryCircle.empty()) {
+            this.agentPoolGroup.append('circle')
+                .attr('class', 'boundary-circle')
+                .attr('cx', 0)
+                .attr('cy', 0)
+                .attr('r', this.areaRadius)
+                .attr('fill', 'none')
+                .attr('stroke', '#ddd')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', '3,3');
+        }
+        
+        // Hide all text elements and clear their content
+        this.leftTotalScore.style('opacity', 0).text('');
+        this.rightTotalScore.style('opacity', 0).text('');
+        this.leftAvgScore.style('opacity', 0).text('');
+        this.rightAvgScore.style('opacity', 0).text('');
         this.leftStrategyLabel.style('opacity', 0);
         this.rightStrategyLabel.style('opacity', 0);
-        this.leftTotalScore.style('opacity', 0);
-        this.rightTotalScore.style('opacity', 0);
         this.leftStrategyNameLabel.style('opacity', 0);
         this.rightStrategyNameLabel.style('opacity', 0);
-        this.leftAvgScore.style('opacity', 0);
-        this.rightAvgScore.style('opacity', 0);
+        
+        // Hide axes and labels
+        this.xAxisLeft.style('opacity', 0);
+        this.xAxisRight.style('opacity', 0);
+        this.yAxis.style('opacity', 0);
+        this.xAxisLabel.style('opacity', 0);
         
         // Reset winner labels
-        this.leftWinnerLabel.style('opacity', 0);
-        this.rightWinnerLabel.style('opacity', 0);
-        
-        // Clear the agent pool
-        this.agentPoolGroup.selectAll('*').remove();
+        this.leftWinnerLabel.style('opacity', 0).text('');
+        this.rightWinnerLabel.style('opacity', 0).text('');
         
         // Clear histogram elements
         this.histogramGroup.selectAll('.histogram-bar').remove();
@@ -728,20 +745,11 @@ class SimulationVisualizer {
         this.leftLegendGroup.selectAll('*').remove();
         this.rightLegendGroup.selectAll('*').remove();
         
-        // Reset total scores
-        this.leftTotalScore.text('Total: 0');
-        this.rightTotalScore.text('Total: 0');
-        
-        // Reset average scores
-        this.leftAvgScore.text('Avg: 0');
-        this.rightAvgScore.text('Avg: 0');
-        
-        // Reset winner labels
-        this.leftWinnerLabel.style('opacity', 0);
-        this.rightWinnerLabel.style('opacity', 0);
-        
-        // Re-create the center line with initial scales
-        this.setupHistogramScales();
+        // Clear agent data and force simulation
+        this.agentData = null;
+        if (this.forceSimulation) {
+            this.forceSimulation.stop();
+        }
         
         // Reset the last stats
         this.lastStats = null;
@@ -752,20 +760,6 @@ class SimulationVisualizer {
      */
     initializeAgentPool() {
         const agents = this.simulation.agents;
-        
-        // Define the radius of the circular area - make it slightly smaller to ensure it fits
-        const areaRadius = Math.min(this.agentPoolWidth * 0.4, this.agentPoolHeight / 2) * 0.9;
-        
-        // Create a boundary circle
-        this.agentPoolGroup.append('circle')
-            .attr('class', 'boundary-circle')
-            .attr('cx', 0)
-            .attr('cy', 0)
-            .attr('r', areaRadius)
-            .attr('fill', 'none')
-            .attr('stroke', '#ddd')
-            .attr('stroke-width', 1)
-            .attr('stroke-dasharray', '3,3');
         
         // Create pairing lines container FIRST (so it appears below the agents)
         this.pairingLinesGroup = this.agentPoolGroup.append('g')
@@ -792,7 +786,7 @@ class SimulationVisualizer {
             
             // Use square root of random value for distance to ensure uniform area distribution
             // (Without sqrt, points would cluster in the center)
-            const distance = Math.sqrt(Math.random()) * areaRadius * 0.9;
+            const distance = Math.sqrt(Math.random()) * this.areaRadius * 0.9;
             
             // Convert to cartesian coordinates
             const x = distance * Math.cos(angle);
@@ -826,9 +820,6 @@ class SimulationVisualizer {
             .attr('fill', d => this.colorScale(strategiesModule.strategies[d.strategyId].name))
             .attr('opacity', 0.8);
             
-        // Store the area radius for use in the tick function
-        this.areaRadius = areaRadius;
-        
         // Start the simulation
         this.forceSimulation
             .nodes(this.agentData)
@@ -889,6 +880,10 @@ class SimulationVisualizer {
         this.rightStrategyNameLabel.style('opacity', 1);
         this.leftAvgScore.style('opacity', 1);
         this.rightAvgScore.style('opacity', 1);
+        this.xAxisLeft.style('opacity', 1);
+        this.xAxisRight.style('opacity', 1);
+        this.yAxis.style('opacity', 1);
+        this.xAxisLabel.style('opacity', 1);
         
         // Update agent pairings if available
         if (stats.currentPairing) {
